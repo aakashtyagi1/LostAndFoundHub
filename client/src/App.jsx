@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { api } from "./services/api";
 import "./App.css";
+import "./theme.css";
 
 function App() {
   /* =====================================================
@@ -1488,15 +1489,7 @@ function App() {
                       setSelectedItem(item);
                       setShowDetails(true);
                     }}
-                    style={{
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      background: "rgba(255,255,255,0.06)",
-                      color: "white",
-                      padding: "6px 10px",
-                      borderRadius: "8px",
-                      fontSize: "11px",
-                      cursor: "pointer",
-                    }}
+                    className="card-details-btn"
                   >
                     Details
                   </button>
@@ -1913,36 +1906,14 @@ function App() {
               <button
                 type="button"
                 onClick={() => setReportType("Lost")}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "10px",
-                  border: "none",
-                  fontWeight: "700",
-                  background:
-                    reportType === "Lost"
-                      ? "linear-gradient(135deg, #ff416c, #ff4b2b)"
-                      : "rgba(255,255,255,0.06)",
-                  color: "white",
-                }}
+                className={`modal-type-btn ${reportType === "Lost" ? "active-lost" : ""}`}
               >
                 🚨 Lost Item
               </button>
               <button
                 type="button"
                 onClick={() => setReportType("Found")}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "10px",
-                  border: "none",
-                  fontWeight: "700",
-                  background:
-                    reportType === "Found"
-                      ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                      : "rgba(255,255,255,0.06)",
-                  color: "white",
-                }}
+                className={`modal-type-btn ${reportType === "Found" ? "active-found" : ""}`}
               >
                 🎁 Found Item
               </button>
@@ -2170,8 +2141,8 @@ function App() {
               </div>
             )}
 
-            <div style={{ background: "rgba(255,255,255,0.03)", padding: "14px", borderRadius: "12px", margin: "15px 0" }}>
-              <p style={{ color: "#edf2fa", lineHeight: 1.6, margin: 0 }}>
+            <div className="modal-desc-box">
+              <p>
                 {selectedItem.description}
               </p>
             </div>
@@ -2235,19 +2206,7 @@ function App() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "350px", overflowY: "auto" }}>
                 {smartMatchesList.map((m) => (
-                  <div
-                    key={m.id}
-                    style={{
-                      padding: "14px",
-                      borderRadius: "12px",
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(0, 190, 255, 0.2)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}
-                  >
+                  <div key={m.id} className="smart-match-card">
                     <div>
                       <span className={`item-type ${m.type === "Lost" ? "lost" : "found"}`}>
                         {m.type}
@@ -2665,19 +2624,7 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => setAdminTab(tab.id)}
-                  style={{
-                    padding: "9px 16px",
-                    borderRadius: "10px",
-                    border: "none",
-                    fontWeight: "700",
-                    fontSize: "12px",
-                    cursor: "pointer",
-                    background:
-                      adminTab === tab.id
-                        ? "linear-gradient(135deg, #00c6ff, #0072ff)"
-                        : "rgba(255,255,255,0.06)",
-                    color: "white",
-                  }}
+                  className={`admin-tab-btn ${adminTab === tab.id ? "active" : ""}`}
                 >
                   {tab.label}
                 </button>
@@ -2752,19 +2699,7 @@ function App() {
                         i.name.toLowerCase().includes(adminSearch.toLowerCase())
                     )
                     .map((item) => (
-                      <div
-                        key={item.id}
-                        style={{
-                          padding: "12px",
-                          borderRadius: "10px",
-                          background: "rgba(255,255,255,0.03)",
-                          border: "1px solid rgba(255,255,255,0.06)",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
+                      <div key={item.id} className="admin-list-item">
                         <div>
                           <span className={`item-type ${item.type === "Lost" ? "lost" : "found"}`}>
                             {item.type}
@@ -2872,18 +2807,7 @@ function App() {
                   </p>
                 ) : (
                   adminUserList.map((user) => (
-                    <div
-                      key={user.id}
-                      style={{
-                        padding: "12px 16px",
-                        borderRadius: "10px",
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
+                    <div key={user.id} className="admin-list-item">
                       <div>
                         <strong>{user.name}</strong>{" "}
                         <span
