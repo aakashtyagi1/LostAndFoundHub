@@ -3,7 +3,13 @@ import { Item } from "../models/Item.js";
 import { Notification } from "../models/Notification.js";
 import { optionalAuth, authenticate } from "../middleware/auth.js";
 
+import mongoose from "mongoose";
+
 const router = express.Router();
+
+function escapeRegex(str = "") {
+  return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}
 
 // GET /api/items - list items with filters
 router.get("/", async (req, res) => {
@@ -13,7 +19,8 @@ router.get("/", async (req, res) => {
     const query = {};
 
     if (search && search.trim()) {
-      const regex = new RegExp(search.trim(), "i");
+      const safeSearch = escapeRegex(search.trim());
+      const regex = new RegExp(safeSearch, "i");
       query.$or = [
         { name: regex },
         { description: regex },
@@ -59,6 +66,10 @@ router.get("/", async (req, res) => {
 // GET /api/items/matches/:id - smart match suggestions
 router.get("/matches/:id", async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Item not found" });
+    }
+
     const item = await Item.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ success: false, message: "Item not found" });
@@ -66,13 +77,14 @@ router.get("/matches/:id", async (req, res) => {
 
     const oppositeType = item.type === "Lost" ? "Found" : "Lost";
 
-    // Split words from the item name for keyword matching
+    // Split words from the item name for keyword matching safely
     const keywords = item.name
       .toLowerCase()
       .split(/\s+/)
-      .filter((w) => w.length > 2);
+      .filter((w) => w.length > 2)
+      .map(escapeRegex);
 
-    const regexPattern = keywords.length > 0 ? keywords.join("|") : item.name;
+    const regexPattern = keywords.length > 0 ? keywords.join("|") : escapeRegex(item.name);
 
     const matches = await Item.find({
       _id: { $ne: item._id },
@@ -97,6 +109,9 @@ router.get("/matches/:id", async (req, res) => {
 // GET /api/items/:id - single item
 router.get("/:id", async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Item not found" });
+    }
     const item = await Item.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ success: false, message: "Item not found" });
@@ -106,6 +121,7 @@ router.get("/:id", async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 });
+
 
 // POST /api/items - report lost or found item
 router.post("/", optionalAuth, async (req, res) => {
@@ -189,6 +205,9 @@ router.post("/", optionalAuth, async (req, res) => {
 // PUT /api/items/:id - update item
 router.put("/:id", optionalAuth, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Item not found" });
+    }
     const item = await Item.findById(req.params.id);
     if (!item) {
       return res.status(404).json({ success: false, message: "Item not found" });
@@ -231,6 +250,9 @@ router.put("/:id", optionalAuth, async (req, res) => {
 // DELETE /api/items/:id - delete item
 router.delete("/:id", optionalAuth, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Item not found" });
+    }
     const item = await Item.findByIdAndDelete(req.params.id);
     if (!item) {
       return res.status(404).json({ success: false, message: "Item not found" });

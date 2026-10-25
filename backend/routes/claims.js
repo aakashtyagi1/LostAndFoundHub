@@ -113,6 +113,8 @@ router.post("/", optionalAuth, async (req, res) => {
   }
 });
 
+import mongoose from "mongoose";
+
 // PUT /api/claims/:id/status - approve or reject claim
 router.put("/:id/status", optionalAuth, async (req, res) => {
   try {
@@ -123,6 +125,10 @@ router.put("/:id/status", optionalAuth, async (req, res) => {
         success: false,
         message: "Status must be Pending, Approved, or Rejected.",
       });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Claim not found." });
     }
 
     const claim = await Claim.findById(req.params.id);
@@ -174,6 +180,9 @@ router.put("/:id/status", optionalAuth, async (req, res) => {
 // DELETE /api/claims/:id
 router.delete("/:id", optionalAuth, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Claim not found." });
+    }
     const claim = await Claim.findByIdAndDelete(req.params.id);
     if (!claim) {
       return res.status(404).json({ success: false, message: "Claim not found." });

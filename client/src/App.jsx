@@ -296,7 +296,7 @@ function App() {
   const loadItems = async () => {
     try {
       const res = await api.getItems();
-      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.success && Array.isArray(res.data)) {
         setItems(res.data);
       }
     } catch (err) {
@@ -1054,22 +1054,7 @@ function App() {
               </button>
 
               {showNotifications && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "52px",
-                    right: 0,
-                    width: "360px",
-                    maxHeight: "450px",
-                    overflowY: "auto",
-                    padding: "16px",
-                    borderRadius: "16px",
-                    background: "#0b192a",
-                    border: "1px solid rgba(255,255,255,.14)",
-                    boxShadow: "0 25px 70px rgba(0,0,0,.6)",
-                    zIndex: 500,
-                  }}
-                >
+                <div className="notifications-dropdown">
                   <div
                     style={{
                       display: "flex",
@@ -1104,22 +1089,10 @@ function App() {
                       {notifications.map((notif) => (
                         <div
                           key={notif.id}
-                          style={{
-                            padding: "12px",
-                            borderRadius: "10px",
-                            background: notif.read
-                              ? "rgba(255,255,255,0.02)"
-                              : "rgba(0, 190, 255, 0.08)",
-                            border: `1px solid ${
-                              notif.read
-                                ? "rgba(255,255,255,0.06)"
-                                : "rgba(0, 190, 255, 0.25)"
-                            }`,
-                            position: "relative",
-                          }}
+                          className={`notification-item ${notif.read ? "read" : "unread"}`}
                         >
                           <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
-                            <strong style={{ fontSize: "12px", color: notif.read ? "#a0b0c6" : "#32c8ff" }}>
+                            <strong className="notif-title" style={{ fontSize: "12px", color: notif.read ? "#a0b0c6" : "#32c8ff" }}>
                               {notif.title}
                             </strong>
                             <button
@@ -1136,7 +1109,7 @@ function App() {
                               ✕
                             </button>
                           </div>
-                          <p style={{ fontSize: "11px", color: "#8b9db5", margin: "6px 0" }}>
+                          <p className="notif-desc" style={{ fontSize: "11px", color: "#8b9db5", margin: "6px 0" }}>
                             {notif.message}
                           </p>
                           {!notif.read && (
@@ -1167,22 +1140,12 @@ function App() {
           {/* User Status / Login / Register */}
           {currentUser ? (
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "6px 12px",
-                  borderRadius: "12px",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
+              <div className="nav-user-pill">
                 <span style={{ fontSize: "16px" }}>
                   {isAdmin ? "🛡️" : "🎓"}
                 </span>
                 <div style={{ textAlign: "left", lineHeight: 1.2 }}>
-                  <div style={{ fontSize: "12px", fontWeight: "700" }}>
+                  <div className="nav-user-name" style={{ fontSize: "12px", fontWeight: "700" }}>
                     {currentUser.name}
                   </div>
                   <small style={{ color: isAdmin ? "#ffc837" : "#32c8ff", fontSize: "10px" }}>
@@ -1193,15 +1156,7 @@ function App() {
 
               <button
                 onClick={handleLogout}
-                style={{
-                  border: "1px solid rgba(255, 80, 80, 0.3)",
-                  background: "rgba(255, 60, 60, 0.1)",
-                  color: "#ff9191",
-                  padding: "8px 14px",
-                  borderRadius: "10px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                }}
+                className="nav-logout-btn"
               >
                 Logout
               </button>
@@ -1428,24 +1383,7 @@ function App() {
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
-                style={{
-                  border: "none",
-                  padding: "8px 16px",
-                  borderRadius: "10px",
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  cursor: "pointer",
-                  transition: "0.2s",
-                  background:
-                    typeFilter === t
-                      ? t === "Lost"
-                        ? "#ff4757"
-                        : t === "Found"
-                        ? "#2ed573"
-                        : "#00c6ff"
-                      : "rgba(255,255,255,0.06)",
-                  color: typeFilter === t ? "white" : "#9eb0c6",
-                }}
+                className={`type-filter-btn ${typeFilter === t ? `active ${t.toLowerCase()}` : ""}`}
               >
                 {t === "All" ? "All Items" : `${t} Items`}
               </button>
