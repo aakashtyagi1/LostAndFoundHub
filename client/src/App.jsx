@@ -1002,18 +1002,9 @@ function App() {
             <div style={{ position: "relative" }}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                style={{
-                  width: "42px",
-                  height: "42px",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,.12)",
-                  background: "rgba(255,255,255,.06)",
-                  color: "white",
-                  fontSize: "19px",
-                  position: "relative",
-                  cursor: "pointer",
-                }}
+                className="notif-bell-btn"
                 title="Notifications"
+                aria-label="Notifications"
               >
                 🔔
                 {unreadNotifications.length > 0 && (
@@ -1200,15 +1191,7 @@ function App() {
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 onClick={() => setShowLogin(true)}
-                style={{
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  background: "transparent",
-                  color: "white",
-                  padding: "8px 16px",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                }}
+                className="nav-login-btn"
               >
                 Log In
               </button>
@@ -1323,15 +1306,7 @@ function App() {
 
             <button
               onClick={() => scrollToSection("items")}
-              style={{
-                border: "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.05)",
-                color: "white",
-                padding: "14px 24px",
-                borderRadius: "12px",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
+              className="secondary-btn"
             >
               🔍 Browse Directory
             </button>

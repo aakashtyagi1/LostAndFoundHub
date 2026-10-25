@@ -1122,9 +1122,60 @@ select option {
 }
 
 .theme-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+/* Nav Login Button */
+.nav-login-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.nav-login-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
   border-color: rgba(0, 190, 255, 0.4);
-  transform: translateY(-1px);
+}
+
+.notif-bell-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-size: 19px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.notif-bell-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 190, 255, 0.4);
+}
+
+.secondary-btn {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 190, 255, 0.4);
 }
 
 /* ================= LIGHT MODE THEME ================= */
@@ -1165,6 +1216,35 @@ select option {
 
 [data-theme="light"] .theme-toggle-btn:hover {
   background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+[data-theme="light"] .nav-login-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .nav-login-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0284c7;
+}
+
+[data-theme="light"] .notif-bell-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .secondary-btn {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .secondary-btn:hover {
+  background: #f1f5f9;
   border-color: #94a3b8;
 }
 
