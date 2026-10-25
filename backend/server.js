@@ -96,13 +96,22 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`=========================================`);
       console.log(`🚀 Lost & Found Hub Server running on:`);
       console.log(`   http://localhost:${PORT}`);
       console.log(`   Health: http://localhost:${PORT}/api/health`);
       console.log(`   Items:  http://localhost:${PORT}/api/items`);
       console.log(`=========================================`);
+    });
+
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(`\n⚠️ Port ${PORT} is currently in use.`);
+        console.error(`Run 'lsof -i :${PORT}' or kill the old process, or set a different PORT.\n`);
+      } else {
+        console.error("Server error:", err);
+      }
     });
   } catch (error) {
     console.error("Failed to start server:", error);
