@@ -1103,3 +1103,310 @@ select option {
     padding: 28px 20px;
   }
 }
+
+/* ================= THEME TOGGLE ================= */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 190, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ================= LIGHT MODE THEME ================= */
+[data-theme="light"] body {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme="light"] .app {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(0, 150, 255, 0.05), transparent 40%),
+    radial-gradient(circle at 90% 30%, rgba(100, 120, 255, 0.05), transparent 40%),
+    #f8fafc;
+}
+
+[data-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .logo small {
+  color: #64748b;
+}
+
+[data-theme="light"] .nav-links button {
+  color: #475569;
+}
+
+[data-theme="light"] .nav-links button:hover {
+  color: #0284c7;
+}
+
+[data-theme="light"] .theme-toggle-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+[data-theme="light"] .theme-toggle-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+[data-theme="light"] .hero h1 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .hero-content > p {
+  color: #475569;
+}
+
+[data-theme="light"] .hero-badge {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: rgba(2, 132, 199, 0.2);
+  color: #0284c7;
+}
+
+[data-theme="light"] .floating-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .floating-card strong {
+  color: #0f172a;
+}
+
+[data-theme="light"] .floating-card p {
+  color: #64748b;
+}
+
+[data-theme="light"] .stat-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .stat-card strong {
+  color: #0284c7;
+}
+
+[data-theme="light"] .stat-card span {
+  color: #64748b;
+}
+
+[data-theme="light"] .section-heading h2 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .section-heading p {
+  color: #64748b;
+}
+
+[data-theme="light"] .search-box {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .search-box input,
+[data-theme="light"] .search-box select,
+[data-theme="light"] .modal input,
+[data-theme="light"] .modal select,
+[data-theme="light"] .modal textarea {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+[data-theme="light"] .item-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .item-card:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .item-card h3 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .item-card > p {
+  color: #64748b;
+}
+
+[data-theme="light"] .item-info {
+  color: #475569;
+}
+
+[data-theme="light"] .item-footer {
+  border-top-color: #f1f5f9;
+}
+
+[data-theme="light"] .match-btn {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .feature-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .feature-card h3 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .feature-card p {
+  color: #64748b;
+}
+
+[data-theme="light"] .step h3 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .step p {
+  color: #64748b;
+}
+
+[data-theme="light"] .step-number {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: rgba(2, 132, 199, 0.2);
+  color: #0284c7;
+}
+
+[data-theme="light"] .dashboard-section {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .dashboard-stat {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .dashboard-stat strong {
+  color: #0284c7;
+}
+
+[data-theme="light"] .dashboard-stat span {
+  color: #64748b;
+}
+
+[data-theme="light"] .dashboard-box {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .dashboard-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .dashboard-item strong {
+  color: #0f172a;
+}
+
+[data-theme="light"] .dashboard-item p {
+  color: #64748b;
+}
+
+[data-theme="light"] .claim-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .claim-header h4 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .claim-header p,
+[data-theme="light"] .claim-header small {
+  color: #64748b;
+}
+
+[data-theme="light"] .claim-reason {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .claim-reason strong {
+  color: #0f172a;
+}
+
+[data-theme="light"] .claim-reason p {
+  color: #475569;
+}
+
+[data-theme="light"] .cta-section {
+  background:
+    radial-gradient(circle at 90% 50%, rgba(2, 132, 199, 0.1), transparent 40%),
+    #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .cta-section h2 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .cta-section p {
+  color: #475569;
+}
+
+[data-theme="light"] .footer {
+  background: #ffffff;
+  border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .footer p,
+[data-theme="light"] .footer small {
+  color: #64748b;
+}
+
+[data-theme="light"] .modal {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.18);
+  color: #0f172a;
+}
+
+[data-theme="light"] .modal h2 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .modal > p {
+  color: #64748b;
+}
+
+[data-theme="light"] .close-btn {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+[data-theme="light"] .empty-state {
+  color: #64748b;
+}

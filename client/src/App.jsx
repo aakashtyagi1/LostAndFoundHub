@@ -234,6 +234,22 @@ function App() {
   const [adminStats, setAdminStats] = useState(null);
   const [adminUserList, setAdminUserList] = useState([]);
 
+  // Theme State (Dark / Light)
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("lostFoundTheme") || "dark";
+    } catch {
+      return "dark";
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("lostFoundTheme", theme);
+    } catch {}
+  }, [theme]);
+
   /* =====================================================
      LOCAL STORAGE SYNC
   ===================================================== */
@@ -971,6 +987,15 @@ function App() {
         </div>
 
         <div className="nav-actions">
+          {/* Light / Dark Mode Toggle */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="theme-toggle-btn"
+            title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+          >
+            {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+          </button>
+
           {/* Notifications Bell */}
           {currentUser && (
             <div style={{ position: "relative" }}>
