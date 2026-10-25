@@ -237,7 +237,8 @@ function App() {
   // Theme State (Dark / Light)
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem("lostFoundTheme") || "dark";
+      const saved = localStorage.getItem("lostFoundTheme");
+      return saved === "light" ? "light" : "dark";
     } catch {
       return "dark";
     }
@@ -245,10 +246,26 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    document.body.setAttribute("data-theme", theme);
+    document.body.className = theme;
     try {
       localStorage.setItem("lostFoundTheme", theme);
     } catch {}
   }, [theme]);
+
+  const toggleTheme = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setTheme((prevTheme) => {
+      const nextTheme = prevTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      document.body.setAttribute("data-theme", nextTheme);
+      document.body.className = nextTheme;
+      try {
+        localStorage.setItem("lostFoundTheme", nextTheme);
+      } catch {}
+      return nextTheme;
+    });
+  };
 
   /* =====================================================
      LOCAL STORAGE SYNC
@@ -930,7 +947,7 @@ function App() {
      RENDER UI
   ===================================================== */
   return (
-    <div className="app">
+    <div className={`app ${theme}`} data-theme={theme}>
       {/* ================= NAVBAR ================= */}
       <nav className="navbar">
         <div className="logo" onClick={() => scrollToSection("home")}>
@@ -989,7 +1006,9 @@ function App() {
         <div className="nav-actions">
           {/* Light / Dark Mode Toggle Icon */}
           <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            type="button"
+            id="theme-toggle-btn"
+            onClick={toggleTheme}
             className="theme-toggle-btn"
             title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
             aria-label="Toggle Theme"
@@ -1438,14 +1457,7 @@ function App() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{
-                padding: "7px 12px",
-                borderRadius: "8px",
-                background: "#0c1a2b",
-                color: "#f0f6ff",
-                border: "1px solid rgba(255,255,255,0.1)",
-                fontSize: "12px",
-              }}
+              className="filter-status-select"
             >
               <option value="All">All Statuses</option>
               <option value="Active">Active Only</option>

@@ -26,11 +26,20 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: #05080d;
+  background: #07111f;
   color: #f8fafc;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
+
+:root[data-theme="light"],
+body[data-theme="light"],
+body.light {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
 
 button,
 input,
