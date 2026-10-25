@@ -987,13 +987,14 @@ function App() {
         </div>
 
         <div className="nav-actions">
-          {/* Light / Dark Mode Toggle */}
+          {/* Light / Dark Mode Toggle Icon */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="theme-toggle-btn"
             title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+            aria-label="Toggle Theme"
           >
-            {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+            {theme === "dark" ? "☀️" : "🌙"}
           </button>
 
           {/* Notifications Bell */}
