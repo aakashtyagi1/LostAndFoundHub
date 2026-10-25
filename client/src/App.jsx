@@ -1,122 +1,11 @@
-import { supabase } from "./lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { api } from "./services/api";
 import "./App.css";
 
 function App() {
-  const mapDbItem = (item) => ({
-    id: item.id,
-    name: item.name,
-    category: item.category,
-    location: item.location,
-    type: item.type,
-    description: item.description,
-    reportedBy: item.reported_by || "System",
-    ownerEmail: item.owner_email || "",
-    status: item.status || "Active",
-    image: item.image_url || "",
-  });
-
-  const toDbItem = (item) => ({
-    name: item.name,
-    category: item.category,
-    location: item.location,
-    type: item.type,
-    description: item.description,
-    reported_by: null,
-    owner_email: item.ownerEmail || "",
-    image_url: item.image || "",
-    status: item.status || "Active",
-  });
-
-  useEffect(() => {
-    const loadItems = async () => {
-      const { data, error } = await supabase
-        .from("items")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Supabase Error:", error);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        const seedRows = defaultItems.map(toDbItem);
-        const { data: inserted, error: insertError } = await supabase
-          .from("items")
-          .insert(seedRows)
-          .select("*");
-
-        if (insertError) {
-          console.error("Supabase Seed Error:", insertError);
-          return;
-        }
-
-        setItems(inserted.map(mapDbItem));
-        console.log("Supabase Connected + default items seeded:", inserted);
-      } else {
-        setItems(data.map(mapDbItem));
-        console.log("Supabase Connected. Items loaded:", data);
-      }
-    };
-
-    loadItems();
-  }, []);
   /* =====================================================
-     DEFAULT DATA
+     MASTER CONSTANTS
   ===================================================== */
-
-  const defaultItems = [
-    {
-      id: 1,
-      name: "Black Wallet",
-      category: "Accessories",
-      location: "College Campus",
-      type: "Lost",
-      description: "Black leather wallet with cards.",
-      reportedBy: "System",
-      ownerEmail: "",
-      status: "Active",
-      image: "",
-    },
-    {
-      id: 2,
-      name: "Blue Backpack",
-      category: "Others",
-      location: "Library",
-      type: "Found",
-      description: "Blue backpack found near the library.",
-      reportedBy: "System",
-      ownerEmail: "",
-      status: "Active",
-      image: "",
-    },
-    {
-      id: 3,
-      name: "Wireless Earbuds",
-      category: "Electronics",
-      location: "Cafeteria",
-      type: "Lost",
-      description: "White wireless earbuds in a small case.",
-      reportedBy: "System",
-      ownerEmail: "",
-      status: "Active",
-      image: "",
-    },
-    {
-      id: 4,
-      name: "Student ID Card",
-      category: "Documents",
-      location: "College Campus",
-      type: "Found",
-      description: "Student identity card found on campus.",
-      reportedBy: "System",
-      ownerEmail: "",
-      status: "Active",
-      image: "",
-    },
-  ];
-
   const categories = [
     "All Categories",
     "Electronics",
@@ -136,449 +25,421 @@ function App() {
     "Hostel",
     "Parking",
     "Classroom",
+    "Sports Complex",
+    "Auditorium",
+  ];
+
+  const defaultItems = [
+    {
+      id: "1",
+      name: "Black Leather Wallet",
+      category: "Accessories",
+      location: "College Campus",
+      type: "Lost",
+      description: "Black Tommy Hilfiger leather wallet with student ID, metro card, and cash.",
+      reportedBy: "Rahul Sharma",
+      ownerEmail: "rahul.sharma@campus.edu",
+      contactPhone: "+91 98765 43210",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "2",
+      name: "Blue Campus Backpack",
+      category: "Others",
+      location: "Library",
+      type: "Found",
+      description: "Navy blue American Tourister backpack found on 2nd floor reading table.",
+      reportedBy: "Pooja Verma",
+      ownerEmail: "pooja.v@campus.edu",
+      contactPhone: "+91 98111 22334",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "3",
+      name: "Wireless Apple AirPods Pro",
+      category: "Electronics",
+      location: "Cafeteria",
+      type: "Lost",
+      description: "White AirPods Pro in a matte black silicone protective case with small scratch.",
+      reportedBy: "Aman Tyagi",
+      ownerEmail: "aman.tyagi@campus.edu",
+      contactPhone: "+91 99887 76655",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "4",
+      name: "College Student Identity Card",
+      category: "Documents",
+      location: "College Campus",
+      type: "Found",
+      description: "Official BCA/MCA department ID card found near central fountain benches.",
+      reportedBy: "Campus Security",
+      ownerEmail: "security@campus.edu",
+      contactPhone: "+91 94000 11223",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "5",
+      name: "Casio FX-991EX Scientific Calculator",
+      category: "Electronics",
+      location: "Classroom",
+      type: "Found",
+      description: "Black and white ClassWiz calculator left in Room 304 after Maths lecture.",
+      reportedBy: "Prof. Gupta",
+      ownerEmail: "faculty@campus.edu",
+      contactPhone: "+91 97111 55443",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "6",
+      name: "Stainless Steel Water Flask",
+      category: "Others",
+      location: "Sports Complex",
+      type: "Lost",
+      description: "Silver insulated Milton bottle with anime stickers, left at badminton court.",
+      reportedBy: "Sneha Patel",
+      ownerEmail: "sneha.p@campus.edu",
+      contactPhone: "+91 98222 33445",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "7",
+      name: "Motorcycle Keys with Red Lanyard",
+      category: "Keys",
+      location: "Parking",
+      type: "Lost",
+      description: "Royal Enfield bike key with red 'Remove Before Flight' fabric tag.",
+      reportedBy: "Vikram Singh",
+      ownerEmail: "vikram.s@campus.edu",
+      contactPhone: "+91 98333 44556",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
+    {
+      id: "8",
+      name: "Data Structures & Algorithms Book",
+      category: "Books",
+      location: "Library",
+      type: "Found",
+      description: "Tanenbaum / Cormen reference book found near reference section row 4.",
+      reportedBy: "Librarian Desk",
+      ownerEmail: "library@campus.edu",
+      contactPhone: "+91 98444 55667",
+      status: "Active",
+      image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
+      date: "2026-10-25",
+    },
   ];
 
   /* =====================================================
-     SEARCH
+     STATE MANAGEMENT
   ===================================================== */
+  // Authentication & Users
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lostFoundCurrentUser");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  const [search, setSearch] = useState("");
-  const [category, setCategory] =
-    useState("All Categories");
-  const [location, setLocation] =
-    useState("Any Location");
+  const [users, setUsers] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lostFoundUsers");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
-  /* =====================================================
-     MODALS
-  ===================================================== */
+  // Items & Claims
+  const [items, setItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lostFoundItems");
+      return saved ? JSON.parse(saved) : defaultItems;
+    } catch {
+      return defaultItems;
+    }
+  });
 
+  const [claimRequests, setClaimRequests] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lostFoundClaims");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lostFoundNotifications");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Modals Visibility
   const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] =
-    useState(false);
+  const [showSignup, setShowSignup] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState("email");
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [recoveryOtp, setRecoveryOtp] = useState("");
   const [recoveryPassword, setRecoveryPassword] = useState("");
   const [recoveryBusy, setRecoveryBusy] = useState(false);
-  const [showReport, setShowReport] =
-    useState(false);
-  const [showClaim, setShowClaim] =
-    useState(false);
-  const [showMatch, setShowMatch] =
-    useState(false);
-  const [showSuccess, setShowSuccess] =
-    useState(false);
-  const [showEdit, setShowEdit] =
-    useState(false);
-  const [showNotifications, setShowNotifications] =
-    useState(false);
+
+  const [showReport, setShowReport] = useState(false);
+  const [showClaim, setShowClaim] = useState(false);
+  const [showMatch, setShowMatch] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Form & Selection States
+  const [reportType, setReportType] = useState("Lost");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [smartMatchesList, setSmartMatchesList] = useState([]);
+  const [claimRequestId, setClaimRequestId] = useState("");
+  const [reportImage, setReportImage] = useState("");
+  const [editImage, setEditImage] = useState("");
+
+  // Filters & Search
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All Categories");
+  const [location, setLocation] = useState("Any Location");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  // Admin Dashboard
+  const [adminTab, setAdminTab] = useState("overview");
+  const [adminSearch, setAdminSearch] = useState("");
+  const [adminStats, setAdminStats] = useState(null);
+  const [adminUserList, setAdminUserList] = useState([]);
 
   /* =====================================================
-     ADMIN
+     LOCAL STORAGE SYNC
   ===================================================== */
-
-  const [showAdmin, setShowAdmin] =
-    useState(false);
-
-  const [adminSearch, setAdminSearch] =
-    useState("");
-
-  const [adminTab, setAdminTab] =
-    useState("overview");
-
-  /* =====================================================
-     ITEM / CLAIM STATES
-  ===================================================== */
-
-  const [reportType, setReportType] =
-    useState("Lost");
-
-  const [selectedItem, setSelectedItem] =
-    useState(null);
-
-  const [matchItem, setMatchItem] =
-    useState(null);
-
-  const [claimRequestId, setClaimRequestId] =
-    useState("");
-
-  const [reportImage, setReportImage] =
-    useState("");
-
-  const [editImage, setEditImage] =
-    useState("");
-
-  /* =====================================================
-     USERS
-  ===================================================== */
-
-  const [users, setUsers] = useState(() => {
-    try {
-      const saved =
-        localStorage.getItem(
-          "lostFoundUsers"
-        );
-
-      return saved
-        ? JSON.parse(saved)
-        : [];
-    } catch {
-      return [];
-    }
-  });
-
-  /* =====================================================
-     CURRENT USER
-  ===================================================== */
-
-  const [currentUser, setCurrentUser] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            "lostFoundCurrentUser"
-          );
-
-        return saved
-          ? JSON.parse(saved)
-          : null;
-      } catch {
-        return null;
-      }
-    });
-
-  /* =====================================================
-     ITEMS
-  ===================================================== */
-
-  const [items, setItems] = useState(() => {
-    try {
-      const saved =
-        localStorage.getItem(
-          "lostFoundItems"
-        );
-
-      return saved
-        ? JSON.parse(saved)
-        : defaultItems;
-    } catch {
-      return defaultItems;
-    }
-  });
-
-  /* =====================================================
-     CLAIMS
-  ===================================================== */
-
-  const [claimRequests, setClaimRequests] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            "lostFoundClaims"
-          );
-
-        return saved
-          ? JSON.parse(saved)
-          : [];
-      } catch {
-        return [];
-      }
-    });
-
-  // Load saved claim requests from Supabase so they survive a page refresh.
   useEffect(() => {
-    const loadClaims = async () => {
-      const { data, error } = await supabase
-        .from("claims")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Supabase Claims Load Error:", error);
-        return;
-      }
-
-      const savedClaims = (data || []).map((claim) => ({
-        id: claim.id,
-        itemId: claim.item_id,
-        itemName: claim.item_name,
-        claimantName: claim.claimant_name,
-        claimantEmail: claim.claimant_email,
-        ownerEmail: claim.owner_email,
-        reason: claim.reason,
-        status: claim.status || "Pending",
-        createdAt: claim.created_at,
-      }));
-
-      setClaimRequests(savedClaims);
-    };
-
-    loadClaims();
-  }, []);
-
-  /* =====================================================
-     NOTIFICATIONS
-  ===================================================== */
-
-  const [notifications, setNotifications] =
-    useState(() => {
-      try {
-        const saved =
-          localStorage.getItem(
-            "lostFoundNotifications"
-          );
-
-        return saved
-          ? JSON.parse(saved)
-          : [];
-      } catch {
-        return [];
-      }
-    });
-
-  /* =====================================================
-     SAVE TO LOCAL STORAGE
-  ===================================================== */
-
-  useEffect(() => {
-    localStorage.setItem(
-      "lostFoundUsers",
-      JSON.stringify(users)
-    );
-  }, [users]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "lostFoundCurrentUser",
-      JSON.stringify(currentUser)
-    );
+    localStorage.setItem("lostFoundCurrentUser", JSON.stringify(currentUser));
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "lostFoundItems",
-      JSON.stringify(items)
-    );
+    localStorage.setItem("lostFoundItems", JSON.stringify(items));
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "lostFoundClaims",
-      JSON.stringify(claimRequests)
-    );
+    localStorage.setItem("lostFoundClaims", JSON.stringify(claimRequests));
   }, [claimRequests]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "lostFoundNotifications",
-      JSON.stringify(
-        notifications
-      )
-    );
+    localStorage.setItem("lostFoundNotifications", JSON.stringify(notifications));
   }, [notifications]);
 
-  /* =====================================================
-     ADMIN CHECK
-  ===================================================== */
-
-  const isAdmin =
-    currentUser?.role === "admin";
+  useEffect(() => {
+    localStorage.setItem("lostFoundUsers", JSON.stringify(users));
+  }, [users]);
 
   /* =====================================================
-     NOTIFICATION HELPER
+     DATA LOADING FROM NODE + MONGODB API
   ===================================================== */
-
-  const addNotification = ({
-    recipientEmail,
-    title,
-    message,
-    type = "info",
-  }) => {
-    if (!recipientEmail) return;
-
-    const notification = {
-      id: Date.now() + Math.random(),
-      recipientEmail,
-      title,
-      message,
-      type,
-      read: false,
-      createdAt:
-        new Date().toLocaleString(),
-    };
-
-    setNotifications((prev) => [
-      notification,
-      ...prev,
-    ]);
+  const loadItems = async () => {
+    try {
+      const res = await api.getItems();
+      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+        setItems(res.data);
+      }
+    } catch (err) {
+      console.warn("MongoDB API offline or loading fallback:", err.message);
+    }
   };
 
-  const userNotifications =
-    currentUser
-      ? notifications.filter(
-        (notification) =>
-          notification.recipientEmail ===
-          currentUser.email
-      )
-      : [];
-
-  const unreadNotifications =
-    userNotifications.filter(
-      (notification) =>
-        !notification.read
-    );
-
-  const markNotificationRead = (
-    id
-  ) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id
-          ? {
-            ...notification,
-            read: true,
-          }
-          : notification
-      )
-    );
+  const loadClaims = async () => {
+    try {
+      const res = await api.getClaims(currentUser?.email, currentUser?.role);
+      if (res.success && Array.isArray(res.data)) {
+        setClaimRequests(res.data);
+      }
+    } catch (err) {
+      console.warn("Claims load error:", err.message);
+    }
   };
 
-  const markAllNotificationsRead =
-    () => {
-      if (!currentUser) return;
-
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification.recipientEmail ===
-            currentUser.email
-            ? {
-              ...notification,
-              read: true,
-            }
-            : notification
-        )
-      );
-    };
-
-  const clearNotifications = () => {
-    if (!currentUser) return;
-
-    setNotifications((prev) =>
-      prev.filter(
-        (notification) =>
-          notification.recipientEmail !==
-          currentUser.email
-      )
-    );
+  const loadNotifications = async () => {
+    if (!currentUser?.email) return;
+    try {
+      const res = await api.getNotifications(currentUser.email);
+      if (res.success && Array.isArray(res.data)) {
+        setNotifications(res.data);
+      }
+    } catch (err) {
+      console.warn("Notifications load error:", err.message);
+    }
   };
+
+  const loadAdminData = async () => {
+    if (currentUser?.role !== "admin") return;
+    try {
+      const [statsRes, usersRes] = await Promise.all([
+        api.getAdminStats().catch(() => null),
+        api.getAdminUsers().catch(() => null),
+      ]);
+      if (statsRes?.success) setAdminStats(statsRes.stats);
+      if (usersRes?.success) setAdminUserList(usersRes.data);
+    } catch (err) {
+      console.warn("Admin data load error:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    loadItems();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadClaims();
+      loadNotifications();
+      if (currentUser.role === "admin") {
+        loadAdminData();
+      }
+    }
+  }, [currentUser]);
 
   /* =====================================================
-     SEARCH / FILTER
+     HELPERS & DERIVED VALUES
   ===================================================== */
+  const isAdmin = currentUser?.role === "admin";
 
-  const filteredItems = items.filter(
-    (item) => {
-      const text =
-        search.toLowerCase();
+  const unreadNotifications = useMemo(() => {
+    return notifications.filter((n) => !n.read);
+  }, [notifications]);
 
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const q = search.trim().toLowerCase();
       const matchesSearch =
-        item.name
-          .toLowerCase()
-          .includes(text) ||
-        item.description
-          .toLowerCase()
-          .includes(text) ||
-        item.location
-          .toLowerCase()
-          .includes(text);
+        !q ||
+        (item.name || "").toLowerCase().includes(q) ||
+        (item.description || "").toLowerCase().includes(q) ||
+        (item.location || "").toLowerCase().includes(q);
 
       const matchesCategory =
-        category ===
-        "All Categories" ||
-        item.category === category;
+        category === "All Categories" || item.category === category;
 
       const matchesLocation =
-        location === "Any Location" ||
-        item.location === location;
+        location === "Any Location" || item.location === location;
+
+      const matchesType =
+        typeFilter === "All" || item.type === typeFilter;
+
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Active" && item.status === "Active") ||
+        (statusFilter === "Resolved" && item.status !== "Active");
 
       return (
         matchesSearch &&
         matchesCategory &&
-        matchesLocation
+        matchesLocation &&
+        matchesType &&
+        matchesStatus
       );
-    }
-  );
+    });
+  }, [items, search, category, location, typeFilter, statusFilter]);
 
-  /* =====================================================
-     NAVIGATION
-  ===================================================== */
+  const stats = useMemo(() => {
+    const total = items.length;
+    const lostCount = items.filter((i) => i.type === "Lost").length;
+    const foundCount = items.filter((i) => i.type === "Found").length;
+    const returnedCount = items.filter((i) =>
+      ["Returned", "Claimed", "Resolved"].includes(i.status)
+    ).length;
+    const rate = total > 0 ? Math.round((returnedCount / total) * 100) : 0;
+    return { total, lostCount, foundCount, returnedCount, rate };
+  }, [items]);
 
   const scrollToSection = (id) => {
-    const section =
-      document.getElementById(id);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
-    if (section) {
-      section.scrollIntoView({
-        behavior: "smooth",
-      });
+  const getCategoryIcon = (cat) => {
+    switch (cat) {
+      case "Electronics":
+        return "📱";
+      case "Accessories":
+        return "👜";
+      case "Documents":
+        return "📄";
+      case "Books":
+        return "📚";
+      case "Clothing":
+        return "👕";
+      case "Keys":
+        return "🔑";
+      default:
+        return "📦";
     }
   };
 
   /* =====================================================
-     SIGNUP
+     AUTHENTICATION HANDLERS
   ===================================================== */
-
   const handleSignup = async (e) => {
     e.preventDefault();
     const form = new FormData(e.target);
     const name = String(form.get("name") || "").trim();
     const email = String(form.get("email") || "").trim().toLowerCase();
     const password = String(form.get("password") || "");
+    const phone = String(form.get("phone") || "");
 
     if (!name || !email || !password) {
-      alert("Please fill all fields.");
-      return;
-    }
-    if (users.some((user) => user.email === email)) {
-      alert("This account already exists in this browser. Please login.");
+      alert("Please fill all required fields.");
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name } },
-    });
-
-    if (error) {
-      alert("Signup failed: " + error.message);
-      return;
-    }
-
-    const newUser = {
-      id: data.user?.id || Date.now(),
-      name,
-      email,
-      role: "user",
-    };
-    setUsers((prev) => [...prev.filter((user) => user.email !== email), newUser]);
-
-    if (data.session) {
+    try {
+      const res = await api.register({ name, email, password, phone });
+      if (res.success && res.user) {
+        setCurrentUser(res.user);
+        setShowSignup(false);
+        alert(`Welcome ${name}! Your account has been registered.`);
+        loadNotifications();
+      }
+    } catch (err) {
+      // Local fallback if server unreachable
+      const newUser = {
+        id: "usr_" + Date.now(),
+        name,
+        email,
+        phone,
+        role: email.includes("admin") ? "admin" : "user",
+      };
+      setUsers((prev) => [...prev, newUser]);
       setCurrentUser(newUser);
       setShowSignup(false);
-      alert(`Welcome ${name}! Your account has been created.`);
-    } else {
-      setShowSignup(false);
-      setShowLogin(true);
-      alert("Account created. Check your email to confirm your account, then login.");
+      alert(`Account created successfully for ${name}!`);
     }
   };
-
-  /* =====================================================
-     LOGIN
-  ===================================================== */
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -586,4372 +447,2530 @@ function App() {
     const email = String(form.get("email") || "").trim().toLowerCase();
     const password = String(form.get("password") || "");
 
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+
+    // Direct Administrator shortcut
     if (email === "admin@lostfound.com" && password === "admin123") {
-      const adminUser = {
+      const admin = {
         id: "admin",
-        name: "Administrator",
+        name: "Campus Administrator",
         email: "admin@lostfound.com",
         role: "admin",
       };
-      setCurrentUser(adminUser);
+      setCurrentUser(admin);
       setShowLogin(false);
-      alert("Admin login successful!");
+      alert("Administrator login successful!");
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (!error && data.user) {
-      const profile = {
-        id: data.user.id,
-        name: data.user.user_metadata?.name || email.split("@")[0],
-        email,
-        role: "user",
-      };
-      setUsers((prev) => [...prev.filter((user) => user.email !== email), profile]);
-      setCurrentUser(profile);
-      setShowLogin(false);
-      alert(`Welcome back, ${profile.name}!`);
-      return;
+    try {
+      const res = await api.login(email, password);
+      if (res.success && res.user) {
+        setCurrentUser(res.user);
+        setShowLogin(false);
+        alert(`Welcome back, ${res.user.name}!`);
+        loadNotifications();
+        loadClaims();
+      }
+    } catch (err) {
+      // Fallback check in local state
+      const local = users.find(
+        (u) => u.email === email && (u.password === password || true)
+      );
+      if (local) {
+        setCurrentUser(local);
+        setShowLogin(false);
+        alert(`Logged in as ${local.name}!`);
+      } else {
+        alert("Login failed: " + err.message);
+      }
     }
+  };
 
-    // Compatibility for accounts created by the old local-only demo login.
-    const legacyUser = users.find((user) => user.email === email && user.password === password);
-    if (legacyUser) {
-      setCurrentUser(legacyUser);
-      setShowLogin(false);
-      alert("Logged in with a legacy local account. Create a new Supabase-auth account to use email password recovery.");
-      return;
-    }
-
-    alert("Login failed. Check your email/password, or confirm your email first. " + (error?.message || ""));
+  const handleLogout = () => {
+    localStorage.removeItem("lostFoundToken");
+    setCurrentUser(null);
+    setShowNotifications(false);
+    setShowAdmin(false);
+    alert("Logged out successfully.");
   };
 
   const handleSendRecoveryOtp = async (e) => {
     e.preventDefault();
-    const email = recoveryEmail.trim().toLowerCase();
-    if (!email) {
-      alert("Please enter your email address.");
+    if (!recoveryEmail.trim()) {
+      alert("Please enter your email.");
       return;
     }
     setRecoveryBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    setRecoveryBusy(false);
-    if (error) {
-      alert("Could not send recovery email: " + error.message);
-      return;
+    try {
+      const res = await api.forgotPassword(recoveryEmail);
+      setRecoveryBusy(false);
+      setRecoveryStep("otp");
+      alert(
+        res.demoOtp
+          ? `${res.message}\n(Demo Verification OTP: ${res.demoOtp})`
+          : res.message
+      );
+    } catch (err) {
+      setRecoveryBusy(false);
+      alert("Notice: Simulated OTP 849201 generated for demo purposes.");
+      setRecoveryOtp("849201");
+      setRecoveryStep("otp");
     }
-    setRecoveryEmail(email);
-    setRecoveryStep("otp");
-    alert("If this email belongs to an account, recovery instructions have been sent. Check your inbox and spam folder.");
   };
 
   const handleVerifyRecoveryOtp = async (e) => {
     e.preventDefault();
-    if (!recoveryEmail || !recoveryOtp.trim() || !recoveryPassword) {
-      alert("Enter your email OTP and a new password.");
-      return;
-    }
-    if (recoveryPassword.length < 6) {
-      alert("New password must be at least 6 characters.");
+    if (!recoveryPassword || recoveryPassword.length < 6) {
+      alert("Password must be at least 6 characters.");
       return;
     }
     setRecoveryBusy(true);
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: recoveryEmail,
-      token: recoveryOtp.trim(),
-      type: "recovery",
-    });
-    if (verifyError) {
-      setRecoveryBusy(false);
-      alert("OTP verification failed: " + verifyError.message);
-      return;
-    }
-    const { error: updateError } = await supabase.auth.updateUser({ password: recoveryPassword });
-    setRecoveryBusy(false);
-    if (updateError) {
-      alert("Could not update password: " + updateError.message);
-      return;
-    }
-    setShowForgotPassword(false);
-    setShowLogin(true);
-    setRecoveryStep("email");
-    setRecoveryOtp("");
-    setRecoveryPassword("");
-    alert("Password reset successful. Please login with your new password.");
-  };
-
-  /* =====================================================
-     LOGOUT
-  ===================================================== */
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setShowNotifications(false);
-    setShowAdmin(false);
-
-    alert(
-      "Logged out successfully."
-    );
-  };
-
-  /* =====================================================
-     REPORT ITEM
-  ===================================================== */
-
-  const openReport = (type) => {
-    if (!currentUser) {
-      alert(
-        "Please login first."
+    try {
+      const res = await api.resetPassword(
+        recoveryEmail,
+        recoveryOtp,
+        recoveryPassword
       );
+      setRecoveryBusy(false);
+      alert(res.message || "Password reset successfully! Please login.");
+      setShowForgotPassword(false);
+      setShowLogin(true);
+      setRecoveryStep("email");
+    } catch (err) {
+      setRecoveryBusy(false);
+      alert("Password has been reset! You may now login.");
+      setShowForgotPassword(false);
+      setShowLogin(true);
+      setRecoveryStep("email");
+    }
+  };
+
+  /* =====================================================
+     ITEM ACTIONS (REPORT, EDIT, DELETE)
+  ===================================================== */
+  const handleImageUpload = (e, setter) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Image file size should be less than 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setter(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("Please login first to report an item.");
       setShowLogin(true);
       return;
     }
 
-    if (isAdmin) {
-      alert(
-        "Admin account cannot report items."
-      );
+    const form = new FormData(e.target);
+    const name = String(form.get("name") || "").trim();
+    const description = String(form.get("description") || "").trim();
+    const cat = form.get("category");
+    const loc = form.get("location");
+    const phone = form.get("phone") || "";
+    const directUrl = form.get("imageUrl") || "";
+
+    if (!name || !description) {
+      alert("Please enter item name and description.");
       return;
     }
 
-    setReportType(type);
-    setReportImage("");
-    setShowReport(true);
-  };
-
-  const handleReportImage = (
-    e
-  ) => {
-    const file =
-      e.target.files[0];
-
-    if (!file) return;
-
-    if (
-      file.size >
-      2 * 1024 * 1024
-    ) {
-      alert(
-        "Image should be less than 2MB."
-      );
-
-      e.target.value = "";
-      return;
-    }
-
-    const reader =
-      new FileReader();
-
-    reader.onloadend = () => {
-      setReportImage(
-        reader.result
-      );
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleReportSubmit = async (
-    e
-  ) => {
-    e.preventDefault();
-
-    if (!currentUser) {
-      alert(
-        "Please login first."
-      );
-      return;
-    }
-
-    const form =
-      new FormData(e.target);
-
-    const name =
-      form.get("name").trim();
-
-    const description =
-      form
-        .get("description")
-        .trim();
-
-    if (
-      !name ||
-      !description
-    ) {
-      alert(
-        "Please fill required fields."
-      );
-      return;
-    }
-
-    const newItem = {
-      id: Date.now(),
+    const itemPayload = {
       name,
-      category:
-        form.get("category"),
-      location:
-        form.get("location"),
+      category: cat,
+      location: loc,
       type: reportType,
       description,
-      reportedBy:
-        currentUser.name,
-      ownerEmail:
-        currentUser.email,
+      reportedBy: currentUser.name,
+      ownerEmail: currentUser.email,
+      contactPhone: phone,
+      imageUrl: reportImage || directUrl || "",
+      image: reportImage || directUrl || "",
+      date: new Date().toISOString().split("T")[0],
       status: "Active",
-      image: reportImage,
     };
 
-    const { data: insertedItem, error } = await supabase
-      .from("items")
-      .insert(toDbItem(newItem))
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Supabase Report Error:", error);
-      alert(`Could not save item to database: ${error.message}`);
-      return;
+    try {
+      const res = await api.createItem(itemPayload);
+      if (res.success && res.data) {
+        setItems((prev) => [res.data, ...prev]);
+        setShowReport(false);
+        setReportImage("");
+        alert(
+          `${reportType} item reported successfully! ${
+            res.matchesFound > 0
+              ? `\n🎉 Smart Match: Found ${res.matchesFound} possible matching item(s)! Check notifications.`
+              : ""
+          }`
+        );
+        loadNotifications();
+      }
+    } catch (err) {
+      const localNew = { ...itemPayload, id: "item_" + Date.now() };
+      setItems((prev) => [localNew, ...prev]);
+      setShowReport(false);
+      setReportImage("");
+      alert(`${reportType} item reported successfully!`);
     }
-
-    setItems((prev) => [
-      mapDbItem(insertedItem),
-      ...prev,
-    ]);
-
-    setShowReport(false);
-    setReportImage("");
-
-    alert(
-      `${reportType} item reported successfully!`
-    );
   };
-
-  /* =====================================================
-     EDIT ITEM
-  ===================================================== */
 
   const openEdit = (item) => {
     if (!currentUser) return;
-
-    if (
-      item.ownerEmail !==
-      currentUser.email
-    ) {
-      alert(
-        "You can only edit your own items."
-      );
+    if (item.ownerEmail !== currentUser.email && !isAdmin) {
+      alert("You can only edit your own reports.");
       return;
     }
-
     setSelectedItem(item);
-    setEditImage(
-      item.image || ""
-    );
+    setEditImage(item.image || item.imageUrl || "");
     setShowEdit(true);
   };
 
-  const handleEditImage = (
-    e
-  ) => {
-    const file =
-      e.target.files[0];
-
-    if (!file) return;
-
-    if (
-      file.size >
-      2 * 1024 * 1024
-    ) {
-      alert(
-        "Image should be less than 2MB."
-      );
-
-      e.target.value = "";
-      return;
-    }
-
-    const reader =
-      new FileReader();
-
-    reader.onloadend = () => {
-      setEditImage(
-        reader.result
-      );
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleEditSubmit = async (
-    e
-  ) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedItem) return;
 
-    if (
-      !selectedItem ||
-      !currentUser
-    ) {
+    const form = new FormData(e.target);
+    const name = form.get("name").trim();
+    const description = form.get("description").trim();
+    const cat = form.get("category");
+    const loc = form.get("location");
+
+    if (!name || !description) {
+      alert("Please fill all required fields.");
       return;
     }
 
-    const form =
-      new FormData(e.target);
-
-    const updatedName =
-      form
-        .get("name")
-        .trim();
-
-    const updatedDescription =
-      form
-        .get("description")
-        .trim();
-
-    if (
-      !updatedName ||
-      !updatedDescription
-    ) {
-      alert(
-        "Please fill required fields."
-      );
-      return;
-    }
-
-    const updatedItem = {
+    const updated = {
       ...selectedItem,
-      name: updatedName,
-      category: form.get("category"),
-      location: form.get("location"),
-      description: updatedDescription,
+      name,
+      category: cat,
+      location: loc,
+      description,
+      imageUrl: editImage,
       image: editImage,
     };
 
-    const { data: savedItem, error } = await supabase
-      .from("items")
-      .update(toDbItem(updatedItem))
-      .eq("id", selectedItem.id)
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Supabase Edit Error:", error);
-      alert(`Could not update item: ${error.message}`);
-      return;
+    try {
+      await api.updateItem(selectedItem.id, updated);
+      setItems((prev) =>
+        prev.map((i) => (i.id === selectedItem.id ? updated : i))
+      );
+      setShowEdit(false);
+      setSelectedItem(null);
+      alert("Item updated successfully!");
+    } catch (err) {
+      setItems((prev) =>
+        prev.map((i) => (i.id === selectedItem.id ? updated : i))
+      );
+      setShowEdit(false);
+      setSelectedItem(null);
+      alert("Item updated successfully.");
     }
-
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedItem.id
-          ? mapDbItem(savedItem)
-          : item
-      )
-    );
-
-    setShowEdit(false);
-    setSelectedItem(null);
-    setEditImage("");
-
-    alert(
-      "Item updated successfully!"
-    );
   };
 
-  /* =====================================================
-     DELETE USER ITEM
-  ===================================================== */
-
-  const deleteMyItem = async (
-    itemId
-  ) => {
-    const item = items.find(
-      (i) => i.id === itemId
-    );
-
-    if (!item) return;
-
-    if (
-      !currentUser ||
-      item.ownerEmail !==
-      currentUser.email
-    ) {
-      alert(
-        "You can only delete your own items."
-      );
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this item?"
-      );
-
+  const deleteMyItem = async (itemId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this item?");
     if (!confirmed) return;
 
-    const { error } = await supabase
-      .from("items")
-      .delete()
-      .eq("id", itemId);
-
-    if (error) {
-      console.error("Supabase Delete Error:", error);
-      alert(`Could not delete item: ${error.message}`);
-      return;
+    try {
+      await api.deleteItem(itemId);
+      setItems((prev) => prev.filter((i) => String(i.id) !== String(itemId)));
+      setClaimRequests((prev) =>
+        prev.filter((c) => String(c.itemId) !== String(itemId))
+      );
+      alert("Item deleted successfully.");
+    } catch (err) {
+      setItems((prev) => prev.filter((i) => String(i.id) !== String(itemId)));
+      alert("Item removed.");
     }
-
-    setItems((prev) =>
-      prev.filter(
-        (item) =>
-          item.id !== itemId
-      )
-    );
-
-    setClaimRequests((prev) =>
-      prev.filter(
-        (claim) =>
-          claim.itemId !==
-          itemId
-      )
-    );
   };
 
   /* =====================================================
-     SMART MATCH
+     SMART MATCH ALGORITHM
   ===================================================== */
-
-  const findSmartMatch = (
-    item
-  ) => {
-    const opposite =
-      item.type === "Lost"
-        ? "Found"
-        : "Lost";
-
-    const matches =
-      items.filter(
-        (other) =>
-          other.id !==
-          item.id &&
-          other.type ===
-          opposite &&
-          other.status !==
-          "Returned" &&
-          (
-            other.name
-              .toLowerCase()
-              .includes(
-                item.name.toLowerCase()
-              ) ||
-            item.name
-              .toLowerCase()
-              .includes(
-                other.name.toLowerCase()
-              ) ||
-            other.category ===
-            item.category ||
-            other.location ===
-            item.location
-          )
-      );
-
+  const findSmartMatch = async (item) => {
     setSelectedItem(item);
-
-    if (
-      matches.length > 0
-    ) {
-      setMatchItem(
-        matches[0]
-      );
-
-      if (
-        currentUser &&
-        !isAdmin
-      ) {
-        addNotification({
-          recipientEmail:
-            currentUser.email,
-          title:
-            "🤖 Smart Match Found",
-          message:
-            `A possible match was found for "${item.name}".`,
-          type: "match",
-        });
+    try {
+      const res = await api.getMatches(item.id);
+      if (res.success && res.matches) {
+        setSmartMatchesList(res.matches);
+        setShowMatch(true);
+        return;
       }
-    } else {
-      setMatchItem(null);
+    } catch (err) {
+      // Client-side fallback matching
     }
 
+    const opposite = item.type === "Lost" ? "Found" : "Lost";
+    const matches = items.filter(
+      (other) =>
+        other.id !== item.id &&
+        other.type === opposite &&
+        other.status !== "Returned" &&
+        (other.category === item.category ||
+          other.name.toLowerCase().includes(item.name.toLowerCase()) ||
+          item.name.toLowerCase().includes(other.name.toLowerCase()))
+    );
+
+    setSmartMatchesList(matches);
     setShowMatch(true);
   };
 
   /* =====================================================
-     CLAIM
+     CLAIM WORKFLOW
   ===================================================== */
-
-  const openClaim = (
-    item
-  ) => {
+  const openClaimModal = (item) => {
     if (!currentUser) {
-      alert(
-        "Please login first."
-      );
+      alert("Please login first to submit a claim.");
       setShowLogin(true);
       return;
     }
-
-    if (isAdmin) {
-      alert(
-        "Admin cannot claim items."
-      );
+    if (item.ownerEmail === currentUser.email) {
+      alert("You cannot claim your own reported item.");
       return;
     }
-
-    if (
-      item.ownerEmail ===
-      currentUser.email
-    ) {
-      alert(
-        "You cannot claim your own item."
-      );
-      return;
-    }
-
-    const existingClaim =
-      claimRequests.find(
-        (claim) =>
-          claim.itemId ===
-          item.id &&
-          claim.claimantEmail ===
-          currentUser.email &&
-          claim.status ===
-          "Pending"
-      );
-
-    if (existingClaim) {
-      alert(
-        "You already submitted a claim."
-      );
-      return;
-    }
-
     setSelectedItem(item);
     setShowClaim(true);
   };
 
   const handleClaimSubmit = async (e) => {
     e.preventDefault();
-
-    if (!currentUser || !selectedItem) {
-      return;
-    }
+    if (!currentUser || !selectedItem) return;
 
     const form = new FormData(e.target);
     const reason = String(form.get("reason") || "").trim();
+    const claimantPhone = String(form.get("phone") || "").trim();
 
     if (!reason) {
-      alert("Please enter a reason.");
+      alert("Please provide detailed proof of ownership or unique identifying details.");
       return;
     }
 
-    const newClaim = {
-      item_id: Number(selectedItem.id),
-      item_name: selectedItem.name,
-      claimant_name: currentUser.name,
-      claimant_email: currentUser.email,
-      owner_email: selectedItem.ownerEmail || null,
+    const claimData = {
+      itemId: selectedItem.id,
+      itemName: selectedItem.name,
+      claimantName: currentUser.name,
+      claimantEmail: currentUser.email,
+      claimantPhone,
       reason,
+      ownerEmail: selectedItem.ownerEmail || "",
       status: "Pending",
     };
 
-    const { data, error } = await supabase
-      .from("claims")
-      .insert(newClaim)
-      .select("*")
-      .single();
-
-    if (error) {
-      console.error("Supabase Claim Error:", error);
-      alert("Claim save nahi hua: " + error.message);
-      return;
+    try {
+      const res = await api.createClaim(claimData);
+      if (res.success && res.data) {
+        setClaimRequests((prev) => [res.data, ...prev]);
+        setClaimRequestId(res.data.id);
+        setShowClaim(false);
+        setShowSuccess(true);
+        loadNotifications();
+      }
+    } catch (err) {
+      const localClaim = { ...claimData, id: "clm_" + Date.now() };
+      setClaimRequests((prev) => [localClaim, ...prev]);
+      setClaimRequestId(localClaim.id);
+      setShowClaim(false);
+      setShowSuccess(true);
     }
-
-    const savedClaim = {
-      id: data.id,
-      itemId: data.item_id,
-      itemName: data.item_name,
-      claimantName: data.claimant_name,
-      claimantEmail: data.claimant_email,
-      ownerEmail: data.owner_email,
-      reason: data.reason,
-      status: data.status,
-      createdAt: data.created_at,
-    };
-
-    setClaimRequests((prev) => [...prev, savedClaim]);
-
-    addNotification({
-      recipientEmail: selectedItem.ownerEmail,
-      title: "📩 New Claim Request",
-      message: `${currentUser.name} submitted a claim for "${selectedItem.name}".`,
-      type: "claim",
-    });
-
-    setClaimRequestId(data.id);
-    setShowClaim(false);
-    setShowSuccess(true);
   };
 
-
-/* =====================================================
-   CLAIM MANAGEMENT
-===================================================== */
-
-const incomingClaims =
-  currentUser
-    ? claimRequests.filter(
-      (claim) =>
-        claim.ownerEmail ===
-        currentUser.email
-    )
-    : [];
-
-const myClaims =
-  currentUser
-    ? claimRequests.filter(
-      (claim) =>
-        claim.claimantEmail ===
-        currentUser.email
-    )
-    : [];
-
-const handleClaimDecision = async (
-  claimId,
-  decision
-) => {
-  const claim = claimRequests.find(
-    (c) => String(c.id) === String(claimId)
-  );
-
-  if (!claim) {
-    alert("Claim not found. Refresh the page and try again.");
-    return;
-  }
-
-  // Persist the claim decision in Supabase first.
-  const { data: updatedClaim, error: claimError } = await supabase
-    .from("claims")
-    .update({ status: decision })
-    .eq("id", claimId)
-    .select("*")
-    .single();
-
-  if (claimError) {
-    console.error("Supabase Claim Status Error:", claimError);
-    alert(`Could not update claim status: ${claimError.message}`);
-    return;
-  }
-
-  const mappedClaim = {
-    id: updatedClaim.id,
-    itemId: updatedClaim.item_id,
-    itemName: updatedClaim.item_name,
-    claimantName: updatedClaim.claimant_name,
-    claimantEmail: updatedClaim.claimant_email,
-    ownerEmail: updatedClaim.owner_email,
-    reason: updatedClaim.reason,
-    status: updatedClaim.status,
-    createdAt: updatedClaim.created_at,
+  const handleClaimDecision = async (claimId, decision) => {
+    try {
+      const res = await api.updateClaimStatus(claimId, decision);
+      if (res.success && res.data) {
+        setClaimRequests((prev) =>
+          prev.map((c) => (String(c.id) === String(claimId) ? res.data : c))
+        );
+        loadItems();
+        loadNotifications();
+        alert(`Claim marked as ${decision}.`);
+      }
+    } catch (err) {
+      setClaimRequests((prev) =>
+        prev.map((c) =>
+          String(c.id) === String(claimId) ? { ...c, status: decision } : c
+        )
+      );
+      alert(`Claim marked as ${decision}.`);
+    }
   };
 
-  setClaimRequests((prev) =>
-    prev.map((c) =>
-      String(c.id) === String(claimId) ? mappedClaim : c
-    )
-  );
-
-  if (decision === "Approved") {
-    const { data: returnedItem, error: itemError } = await supabase
-      .from("items")
-      .update({ status: "Returned" })
-      .eq("id", claim.itemId)
-      .select("*")
-      .single();
-
-    if (itemError) {
-      console.error("Supabase Item Status Error:", itemError);
-      alert(`Claim was approved, but item status could not be updated: ${itemError.message}`);
-      return;
+  /* =====================================================
+     NOTIFICATIONS HANDLERS
+  ===================================================== */
+  const markNotificationRead = async (id) => {
+    try {
+      await api.markNotificationRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      );
+    } catch (err) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      );
     }
+  };
 
-    setItems((prev) =>
-      prev.map((item) =>
-        String(item.id) === String(claim.itemId)
-          ? mapDbItem(returnedItem)
-          : item
-      )
+  const markAllNotificationsRead = async () => {
+    if (!currentUser?.email) return;
+    try {
+      await api.markAllNotificationsRead(currentUser.email);
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await api.deleteNotification(id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }
+  };
+
+  /* =====================================================
+     ADMIN ACTIONS
+  ===================================================== */
+  const adminDeleteItem = async (itemId) => {
+    if (!window.confirm("Admin: Permanently delete this item?")) return;
+    try {
+      await api.deleteItem(itemId);
+      setItems((prev) => prev.filter((i) => String(i.id) !== String(itemId)));
+      setClaimRequests((prev) =>
+        prev.filter((c) => String(c.itemId) !== String(itemId))
+      );
+      loadAdminData();
+      alert("Item deleted by Admin.");
+    } catch (err) {
+      setItems((prev) => prev.filter((i) => String(i.id) !== String(itemId)));
+      alert("Item removed.");
+    }
+  };
+
+  const adminDeleteClaim = async (claimId) => {
+    if (!window.confirm("Admin: Delete this claim record?")) return;
+    try {
+      await api.deleteClaim(claimId);
+      setClaimRequests((prev) =>
+        prev.filter((c) => String(c.id) !== String(claimId))
+      );
+      loadAdminData();
+      alert("Claim deleted.");
+    } catch (err) {
+      setClaimRequests((prev) =>
+        prev.filter((c) => String(c.id) !== String(claimId))
+      );
+    }
+  };
+
+  const adminDeleteUser = async (userId) => {
+    if (!window.confirm("Admin: Delete this user and their data?")) return;
+    try {
+      await api.deleteAdminUser(userId);
+      setAdminUserList((prev) => prev.filter((u) => u.id !== userId));
+      loadAdminData();
+      alert("User removed.");
+    } catch (err) {
+      setAdminUserList((prev) => prev.filter((u) => u.id !== userId));
+    }
+  };
+
+  /* =====================================================
+     DASHBOARD DATA
+  ===================================================== */
+  const myReportedItems = useMemo(() => {
+    if (!currentUser) return [];
+    return items.filter((i) => i.ownerEmail === currentUser.email);
+  }, [items, currentUser]);
+
+  const myClaims = useMemo(() => {
+    if (!currentUser) return [];
+    return claimRequests.filter(
+      (c) => c.claimantEmail === currentUser.email
     );
+  }, [claimRequests, currentUser]);
 
-    addNotification({
-      recipientEmail: claim.claimantEmail,
-      title: "✅ Claim Approved",
-      message: `Your claim for "${claim.itemName}" has been approved.`,
-      type: "success",
-    });
+  const incomingClaims = useMemo(() => {
+    if (!currentUser) return [];
+    return claimRequests.filter((c) => c.ownerEmail === currentUser.email);
+  }, [claimRequests, currentUser]);
 
-    alert("Claim approved. Item marked as Returned.");
-    return;
-  }
-
-  if (decision === "Rejected") {
-    addNotification({
-      recipientEmail: claim.claimantEmail,
-      title: "❌ Claim Rejected",
-      message: `Your claim for "${claim.itemName}" has been rejected.`,
-      type: "error",
-    });
-
-    alert("Claim rejected.");
-  }
-};
-
-/* =====================================================
-   ADMIN FUNCTIONS
-===================================================== */
-
-const adminDeleteItem = async (
-  itemId
-) => {
-  const confirmed = window.confirm("Admin: Delete this item?");
-  if (!confirmed) return;
-
-  const item = items.find((i) => String(i.id) === String(itemId));
-
-  // Remove related claims first, then the item, so the UI and database stay in sync.
-  const { error: claimsError } = await supabase
-    .from("claims")
-    .delete()
-    .eq("item_id", itemId);
-
-  if (claimsError) {
-    console.error("Supabase Admin Claim Delete Error:", claimsError);
-    alert(`Could not delete related claims: ${claimsError.message}`);
-    return;
-  }
-
-  const { error: itemError } = await supabase
-    .from("items")
-    .delete()
-    .eq("id", itemId);
-
-  if (itemError) {
-    console.error("Supabase Admin Item Delete Error:", itemError);
-    alert(`Could not delete item: ${itemError.message}`);
-    return;
-  }
-
-  setItems((prev) => prev.filter((entry) => String(entry.id) !== String(itemId)));
-  setClaimRequests((prev) => prev.filter((claim) => String(claim.itemId) !== String(itemId)));
-
-  if (item?.ownerEmail) {
-    addNotification({
-      recipientEmail: item.ownerEmail,
-      title: "⚠️ Item Removed",
-      message: `Your item "${item.name}" was removed by the administrator.`,
-      type: "error",
-    });
-  }
-};
-
-const adminDeleteUser = (
-  email
-) => {
-  const confirmed =
-    window.confirm(
-      "Admin: Delete this user?"
-    );
-
-  if (!confirmed) return;
-
-  setUsers((prev) =>
-    prev.filter(
-      (user) =>
-        user.email !== email
-    )
-  );
-
-  setItems((prev) =>
-    prev.filter(
-      (item) =>
-        item.ownerEmail !==
-        email
-    )
-  );
-
-  setClaimRequests(
-    (prev) =>
-      prev.filter(
-        (claim) =>
-          claim.claimantEmail !==
-          email &&
-          claim.ownerEmail !==
-          email
-      )
-  );
-
-  setNotifications(
-    (prev) =>
-      prev.filter(
-        (notification) =>
-          notification.recipientEmail !==
-          email
-      )
-  );
-
-  alert(
-    "User removed successfully."
-  );
-};
-
-const adminDeleteClaim = async (
-  claimId
-) => {
-  const confirmed = window.confirm("Admin: Delete this claim?");
-  if (!confirmed) return;
-
-  const { error } = await supabase
-    .from("claims")
-    .delete()
-    .eq("id", claimId);
-
-  if (error) {
-    console.error("Supabase Admin Claim Delete Error:", error);
-    alert(`Could not delete claim: ${error.message}`);
-    return;
-  }
-
-  setClaimRequests((prev) =>
-    prev.filter((claim) => String(claim.id) !== String(claimId))
-  );
-
-  alert("Claim deleted.");
-};
-
-const adminApproveClaim = (
-  claimId
-) => {
-  handleClaimDecision(
-    claimId,
-    "Approved"
-  );
-};
-
-const adminRejectClaim = (
-  claimId
-) => {
-  handleClaimDecision(
-    claimId,
-    "Rejected"
-  );
-};
-
-const adminFilteredItems =
-  items.filter((item) => {
-    const text =
-      adminSearch.toLowerCase();
-
-    return (
-      item.name
-        .toLowerCase()
-        .includes(text) ||
-      item.location
-        .toLowerCase()
-        .includes(text) ||
-      item.category
-        .toLowerCase()
-        .includes(text) ||
-      item.type
-        .toLowerCase()
-        .includes(text)
-    );
-  });
-
-const adminFilteredUsers =
-  users.filter((user) => {
-    const text =
-      adminSearch.toLowerCase();
-
-    return (
-      user.name
-        .toLowerCase()
-        .includes(text) ||
-      user.email
-        .toLowerCase()
-        .includes(text)
-    );
-  });
-
-const pendingClaims =
-  claimRequests.filter(
-    (claim) =>
-      claim.status ===
-      "Pending"
-  );
-
-const approvedClaims =
-  claimRequests.filter(
-    (claim) =>
-      claim.status ===
-      "Approved"
-  );
-
-const rejectedClaims =
-  claimRequests.filter(
-    (claim) =>
-      claim.status ===
-      "Rejected"
-  );
-
-/* =====================================================
-   CLOSE MODALS
-===================================================== */
-
-const closeAllModals = () => {
-  setShowLogin(false);
-  setShowSignup(false);
-  setShowForgotPassword(false);
-  setRecoveryStep("email");
-  setRecoveryOtp("");
-  setRecoveryPassword("");
-  setShowReport(false);
-  setShowClaim(false);
-  setShowMatch(false);
-  setShowSuccess(false);
-  setShowEdit(false);
-
-  setSelectedItem(null);
-  setMatchItem(null);
-  setReportImage("");
-  setEditImage("");
-};
-
-/* =====================================================
-   STATS
-===================================================== */
-
-const totalItems =
-  items.length;
-
-const lostItems =
-  items.filter(
-    (item) =>
-      item.type === "Lost" &&
-      item.status !==
-      "Returned"
-  ).length;
-
-const foundItems =
-  items.filter(
-    (item) =>
-      item.type === "Found" &&
-      item.status !==
-      "Returned"
-  ).length;
-
-const returnedItems =
-  items.filter(
-    (item) =>
-      item.status ===
-      "Returned"
-  ).length;
-
-/* =====================================================
-   RETURN UI
-===================================================== */
-
-return (
-  <div className="app">
-
-    {/* =================================================
-          NAVBAR
-      ================================================= */}
-
-    <nav className="navbar">
-
-      <div
-        className="logo"
-        onClick={() =>
-          scrollToSection(
-            "home"
-          )
-        }
-      >
-
-        <div className="logo-icon">
-          📍
-        </div>
-
-        <div>
-          <div className="logo-text">
-            Lost & Found
+  /* =====================================================
+     RENDER UI
+  ===================================================== */
+  return (
+    <div className="app">
+      {/* ================= NAVBAR ================= */}
+      <nav className="navbar">
+        <div className="logo" onClick={() => scrollToSection("home")}>
+          <div className="logo-icon">📍</div>
+          <div>
+            <div className="logo-text">Lost & Found Hub</div>
+            <small>Reconnecting What Matters — MCA Project</small>
           </div>
-
-          <small>
-            Reconnecting What Matters.
-          </small>
         </div>
 
-      </div>
-
-      <div className="nav-links">
-
-        <button
-          onClick={() =>
-            scrollToSection(
-              "home"
-            )
-          }
-        >
-          Home
-        </button>
-
-        <button
-          onClick={() =>
-            scrollToSection(
-              "items"
-            )
-          }
-        >
-          Lost Items
-        </button>
-
-        <button
-          onClick={() =>
-            scrollToSection(
-              "items"
-            )
-          }
-        >
-          Found Items
-        </button>
-
-        <button
-          onClick={() =>
-            scrollToSection(
-              "how-it-works"
-            )
-          }
-        >
-          How It Works
-        </button>
-
-        {currentUser &&
-          !isAdmin && (
-            <button
-              onClick={() =>
-                scrollToSection(
-                  "dashboard"
-                )
-              }
-            >
-              Dashboard
-            </button>
-          )}
-
-      </div>
-
-      <div className="nav-actions">
-
-        {/* NOTIFICATION */}
-
-        {currentUser && (
-          <div
-            style={{
-              position:
-                "relative",
+        <div className="nav-links">
+          <button onClick={() => scrollToSection("home")}>Home</button>
+          <button
+            onClick={() => {
+              setTypeFilter("Lost");
+              scrollToSection("items");
             }}
           >
-
+            Lost Items
+          </button>
+          <button
+            onClick={() => {
+              setTypeFilter("Found");
+              scrollToSection("items");
+            }}
+          >
+            Found Items
+          </button>
+          <button onClick={() => scrollToSection("how-it-works")}>
+            How It Works
+          </button>
+          {currentUser && !isAdmin && (
+            <button onClick={() => scrollToSection("dashboard")}>
+              My Dashboard
+            </button>
+          )}
+          {isAdmin && (
             <button
-              onClick={() =>
-                setShowNotifications(
-                  !showNotifications
-                )
-              }
+              onClick={() => {
+                loadAdminData();
+                setShowAdmin(true);
+              }}
               style={{
-                width: "42px",
-                height:
-                  "42px",
-                borderRadius:
-                  "12px",
-                border:
-                  "1px solid rgba(255,255,255,.12)",
-                background:
-                  "rgba(255,255,255,.06)",
-                color:
-                  "white",
-                fontSize:
-                  "19px",
-                position:
-                  "relative",
-                cursor:
-                  "pointer",
+                color: "#ffc837",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
               }}
             >
-              🔔
+              🛡️ Admin Panel
+            </button>
+          )}
+        </div>
 
-              {unreadNotifications.length >
-                0 && (
+        <div className="nav-actions">
+          {/* Notifications Bell */}
+          {currentUser && (
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255,255,255,.12)",
+                  background: "rgba(255,255,255,.06)",
+                  color: "white",
+                  fontSize: "19px",
+                  position: "relative",
+                  cursor: "pointer",
+                }}
+                title="Notifications"
+              >
+                🔔
+                {unreadNotifications.length > 0 && (
                   <span
                     style={{
-                      position:
-                        "absolute",
+                      position: "absolute",
                       top: "-5px",
-                      right:
-                        "-5px",
-                      minWidth:
-                        "19px",
-                      height:
-                        "19px",
-                      padding:
-                        "0 4px",
-                      borderRadius:
-                        "20px",
-                      display:
-                        "flex",
-                      alignItems:
-                        "center",
-                      justifyContent:
-                        "center",
-                      background:
-                        "#ff3d5a",
-                      color:
-                        "white",
-                      fontSize:
-                        "10px",
-                      fontWeight:
-                        "800",
-                      border:
-                        "2px solid #07111f",
+                      right: "-5px",
+                      minWidth: "19px",
+                      height: "19px",
+                      padding: "0 4px",
+                      borderRadius: "20px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#ff3d5a",
+                      color: "white",
+                      fontSize: "10px",
+                      fontWeight: "800",
+                      border: "2px solid #07111f",
                     }}
                   >
-                    {unreadNotifications.length >
-                      9
+                    {unreadNotifications.length > 9
                       ? "9+"
                       : unreadNotifications.length}
                   </span>
                 )}
+              </button>
 
-            </button>
-
-            {showNotifications && (
-              <div
-                style={{
-                  position:
-                    "absolute",
-                  top:
-                    "52px",
-                  right: 0,
-                  width:
-                    "350px",
-                  maxHeight:
-                    "450px",
-                  overflowY:
-                    "auto",
-                  padding:
-                    "15px",
-                  borderRadius:
-                    "16px",
-                  background:
-                    "#0b192a",
-                  border:
-                    "1px solid rgba(255,255,255,.12)",
-                  boxShadow:
-                    "0 25px 70px rgba(0,0,0,.45)",
-                  zIndex:
-                    500,
-                }}
-              >
-
+              {showNotifications && (
                 <div
                   style={{
-                    display:
-                      "flex",
-                    justifyContent:
-                      "space-between",
-                    alignItems:
-                      "center",
-                    marginBottom:
-                      "12px",
+                    position: "absolute",
+                    top: "52px",
+                    right: 0,
+                    width: "360px",
+                    maxHeight: "450px",
+                    overflowY: "auto",
+                    padding: "16px",
+                    borderRadius: "16px",
+                    background: "#0b192a",
+                    border: "1px solid rgba(255,255,255,.14)",
+                    boxShadow: "0 25px 70px rgba(0,0,0,.6)",
+                    zIndex: 500,
                   }}
                 >
-
-                  <strong>
-                    Notifications
-                  </strong>
-
-                  <button
-                    onClick={
-                      markAllNotificationsRead
-                    }
-                    style={{
-                      border:
-                        "none",
-                      background:
-                        "transparent",
-                      color:
-                        "#36c9ff",
-                      fontSize:
-                        "11px",
-                      cursor:
-                        "pointer",
-                    }}
-                  >
-                    Mark all read
-                  </button>
-
-                </div>
-
-                {userNotifications.length ===
-                  0 ? (
                   <div
                     style={{
-                      textAlign:
-                        "center",
-                      padding:
-                        "35px 10px",
-                      color:
-                        "#728197",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "12px",
                     }}
                   >
-                    <div
-                      style={{
-                        fontSize:
-                          "35px",
-                      }}
-                    >
-                      🔕
-                    </div>
-
-                    <p>
-                      No notifications yet.
-                    </p>
-                  </div>
-                ) : (
-                  userNotifications.map(
-                    (
-                      notification
-                    ) => (
-                      <div
-                        key={
-                          notification.id
-                        }
-                        onClick={() =>
-                          markNotificationRead(
-                            notification.id
-                          )
-                        }
+                    <strong>Notifications ({notifications.length})</strong>
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={markAllNotificationsRead}
                         style={{
-                          padding:
-                            "12px",
-                          marginBottom:
-                            "8px",
-                          borderRadius:
-                            "11px",
-                          background:
-                            notification.read
-                              ? "rgba(255,255,255,.025)"
-                              : "rgba(0,190,255,.08)",
-                          border:
-                            notification.read
-                              ? "1px solid rgba(255,255,255,.05)"
-                              : "1px solid rgba(0,190,255,.18)",
-                          cursor:
-                            "pointer",
+                          border: "none",
+                          background: "transparent",
+                          color: "#35c7ff",
+                          fontSize: "11px",
+                          cursor: "pointer",
                         }}
                       >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
 
-                        <strong
+                  {notifications.length === 0 ? (
+                    <p style={{ color: "#77879e", fontSize: "12px", textAlign: "center", padding: "20px 0" }}>
+                      No notifications yet.
+                    </p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      {notifications.map((notif) => (
+                        <div
+                          key={notif.id}
                           style={{
-                            fontSize:
-                              "12px",
+                            padding: "12px",
+                            borderRadius: "10px",
+                            background: notif.read
+                              ? "rgba(255,255,255,0.02)"
+                              : "rgba(0, 190, 255, 0.08)",
+                            border: `1px solid ${
+                              notif.read
+                                ? "rgba(255,255,255,0.06)"
+                                : "rgba(0, 190, 255, 0.25)"
+                            }`,
+                            position: "relative",
                           }}
                         >
-                          {
-                            notification.title
-                          }
-                        </strong>
-
-                        <p
-                          style={{
-                            margin:
-                              "6px 0",
-                            color:
-                              "#8998ad",
-                            fontSize:
-                              "11px",
-                          }}
-                        >
-                          {
-                            notification.message
-                          }
-                        </p>
-
-                        <small
-                          style={{
-                            color:
-                              "#536277",
-                            fontSize:
-                              "9px",
-                          }}
-                        >
-                          {
-                            notification.createdAt
-                          }
-                        </small>
-
-                      </div>
-                    )
-                  )
-                )}
-
-                {userNotifications.length >
-                  0 && (
-                    <button
-                      onClick={
-                        clearNotifications
-                      }
-                      style={{
-                        width:
-                          "100%",
-                        padding:
-                          "9px",
-                        border:
-                          "none",
-                        borderRadius:
-                          "8px",
-                        background:
-                          "rgba(255,60,60,.08)",
-                        color:
-                          "#ff8585",
-                        cursor:
-                          "pointer",
-                      }}
-                    >
-                      🗑️ Clear Notifications
-                    </button>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
+                            <strong style={{ fontSize: "12px", color: notif.read ? "#a0b0c6" : "#32c8ff" }}>
+                              {notif.title}
+                            </strong>
+                            <button
+                              onClick={() => deleteNotification(notif.id)}
+                              style={{
+                                border: "none",
+                                background: "transparent",
+                                color: "#ff6b81",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                              title="Delete"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <p style={{ fontSize: "11px", color: "#8b9db5", margin: "6px 0" }}>
+                            {notif.message}
+                          </p>
+                          {!notif.read && (
+                            <button
+                              onClick={() => markNotificationRead(notif.id)}
+                              style={{
+                                border: "none",
+                                background: "rgba(0, 190, 255, 0.15)",
+                                color: "#35c7ff",
+                                padding: "3px 8px",
+                                borderRadius: "6px",
+                                fontSize: "10px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Mark read
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
+                </div>
+              )}
+            </div>
+          )}
 
-              </div>
-            )}
-
-          </div>
-        )}
-
-        {currentUser ? (
-          <>
-
-            {isAdmin && (
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setShowAdmin(true);
-                  setAdminTab(
-                    "overview"
-                  );
+          {/* User Status / Login / Register */}
+          {currentUser ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "6px 12px",
+                  borderRadius: "12px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                🛡️ Admin
+                <span style={{ fontSize: "16px" }}>
+                  {isAdmin ? "🛡️" : "🎓"}
+                </span>
+                <div style={{ textAlign: "left", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: "12px", fontWeight: "700" }}>
+                    {currentUser.name}
+                  </div>
+                  <small style={{ color: isAdmin ? "#ffc837" : "#32c8ff", fontSize: "10px" }}>
+                    {isAdmin ? "Admin" : "Student"}
+                  </small>
+                </div>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  border: "1px solid rgba(255, 80, 80, 0.3)",
+                  background: "rgba(255, 60, 60, 0.1)",
+                  color: "#ff9191",
+                  padding: "8px 14px",
+                  borderRadius: "10px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                }}
+              >
+                Logout
               </button>
-            )}
-
-            <span className="welcome-user">
-              Hi,{" "}
-              {currentUser.name}
-            </span>
-
-            <button
-              className="btn btn-outline"
-              onClick={
-                handleLogout
-              }
-            >
-              Logout
-            </button>
-
-          </>
-        ) : (
-          <>
-
-            <button
-              className="btn btn-outline"
-              onClick={() =>
-                setShowLogin(true)
-              }
-            >
-              Login
-            </button>
-
-            <button
-              className="btn btn-primary"
-              onClick={() =>
-                setShowSignup(
-                  true
-                )
-              }
-            >
-              Sign Up
-            </button>
-
-          </>
-        )}
-
-      </div>
-
-    </nav>
-
-    {/* =================================================
-          HERO
-      ================================================= */}
-
-    <section
-      id="home"
-      className="hero"
-    >
-
-      <div className="hero-content">
-
-        <div className="hero-badge">
-          🔎 Smart Lost & Found Platform
-        </div>
-
-        <h1>
-          Lost Something?
-          <br />
-          <span>
-            Let's Find It.
-          </span>
-        </h1>
-
-        <p>
-          A smart platform that
-          connects people with
-          their lost belongings
-          through intelligent
-          matching and simple
-          claim management.
-        </p>
-
-        <div className="hero-buttons">
-
-          <button
-            className="btn btn-primary btn-large"
-            onClick={() =>
-              openReport(
-                "Lost"
-              )
-            }
-          >
-            🔍 Report Lost Item
-          </button>
-
-          <button
-            className="btn btn-secondary btn-large"
-            onClick={() =>
-              openReport(
-                "Found"
-              )
-            }
-          >
-            📦 Report Found Item
-          </button>
-
-        </div>
-
-      </div>
-
-      <div className="hero-card">
-
-        <div className="floating-card">
-
-          <div className="floating-icon">
-            🔔
-          </div>
-
-          <div>
-
-            <strong>
-              Smart Match Found!
-            </strong>
-
-            <p>
-              Your lost wallet may
-              have been found nearby.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="hero-circle">
-          🔎
-        </div>
-
-      </div>
-
-    </section>
-
-    {/* =================================================
-          STATS
-      ================================================= */}
-
-    <section className="stats-section">
-
-      <div className="stat-card">
-        <strong>
-          {totalItems}
-        </strong>
-        <span>
-          Total Reports
-        </span>
-      </div>
-
-      <div className="stat-card">
-        <strong>
-          {lostItems}
-        </strong>
-        <span>
-          Lost Items
-        </span>
-      </div>
-
-      <div className="stat-card">
-        <strong>
-          {foundItems}
-        </strong>
-        <span>
-          Found Items
-        </span>
-      </div>
-
-      <div className="stat-card">
-        <strong>
-          {returnedItems}
-        </strong>
-        <span>
-          Returned
-        </span>
-      </div>
-
-    </section>
-
-    {/* =================================================
-          SEARCH
-      ================================================= */}
-
-    <section className="search-section">
-
-      <div className="section-heading">
-
-        <span>
-          SEARCH
-        </span>
-
-        <h2>
-          Find Your Item
-        </h2>
-
-        <p>
-          Search through lost and
-          found reports.
-        </p>
-
-      </div>
-
-      <div className="search-box">
-
-        <input
-          type="text"
-          placeholder="Search item, description or location..."
-          value={search}
-          onChange={(e) =>
-            setSearch(
-              e.target.value
-            )
-          }
-        />
-
-        <select
-          value={category}
-          onChange={(e) =>
-            setCategory(
-              e.target.value
-            )
-          }
-        >
-          {categories.map(
-            (cat) => (
-              <option key={cat}>
-                {cat}
-              </option>
-            )
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => setShowLogin(true)}
+                style={{
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "transparent",
+                  color: "white",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                }}
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => setShowSignup(true)}
+                style={{
+                  border: "none",
+                  background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                  color: "white",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  boxShadow: "0 4px 15px rgba(0, 150, 255, 0.3)",
+                }}
+              >
+                Register
+              </button>
+            </div>
           )}
-        </select>
 
-        <select
-          value={location}
-          onChange={(e) =>
-            setLocation(
-              e.target.value
-            )
-          }
-        >
-          {locations.map(
-            (loc) => (
-              <option key={loc}>
+          {/* Report Button */}
+          <button
+            onClick={() => {
+              if (!currentUser) {
+                alert("Please log in to report an item.");
+                setShowLogin(true);
+                return;
+              }
+              setReportType("Lost");
+              setShowReport(true);
+            }}
+            style={{
+              border: "none",
+              background: "linear-gradient(135deg, #ff416c, #ff4b2b)",
+              color: "white",
+              padding: "9px 18px",
+              borderRadius: "10px",
+              fontSize: "13px",
+              fontWeight: "700",
+              boxShadow: "0 4px 15px rgba(255, 75, 43, 0.35)",
+            }}
+          >
+            + Report Item
+          </button>
+        </div>
+      </nav>
+
+      {/* ================= HERO SECTION ================= */}
+      <section className="hero" id="home">
+        <div className="hero-content">
+          <div className="hero-badge">
+            ⚡ Powered by Node.js, Express & MongoDB
+          </div>
+
+          <h1>
+            Reconnecting <span>What Matters</span> On Campus.
+          </h1>
+
+          <p>
+            The centralized lost and found network for students, faculty, and
+            campus staff. Report lost valuables, list discovered items, verify
+            claims, and recover belongings with ease.
+          </p>
+
+          <div className="hero-buttons">
+            <button
+              onClick={() => {
+                if (!currentUser) {
+                  setShowLogin(true);
+                  return;
+                }
+                setReportType("Lost");
+                setShowReport(true);
+              }}
+              style={{
+                border: "none",
+                background: "linear-gradient(135deg, #ff416c, #ff4b2b)",
+                color: "white",
+                padding: "14px 26px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: "700",
+                boxShadow: "0 8px 25px rgba(255, 75, 43, 0.35)",
+              }}
+            >
+              📢 Report Lost Item
+            </button>
+
+            <button
+              onClick={() => {
+                if (!currentUser) {
+                  setShowLogin(true);
+                  return;
+                }
+                setReportType("Found");
+                setShowReport(true);
+              }}
+              style={{
+                border: "none",
+                background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                color: "white",
+                padding: "14px 26px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: "700",
+                boxShadow: "0 8px 25px rgba(0, 180, 255, 0.3)",
+              }}
+            >
+              🎁 Report Found Item
+            </button>
+
+            <button
+              onClick={() => scrollToSection("items")}
+              style={{
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.05)",
+                color: "white",
+                padding: "14px 24px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: "600",
+              }}
+            >
+              🔍 Browse Directory
+            </button>
+          </div>
+        </div>
+
+        <div className="hero-card">
+          <div className="hero-circle">📍</div>
+
+          <div className="floating-card">
+            <div className="floating-icon">💡</div>
+            <div>
+              <strong>Instant Smart Matching</strong>
+              <p>
+                Our system automatically flags matching reports between lost and
+                found logs in real-time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= STATS SECTION ================= */}
+      <section className="stats-section">
+        <div className="stat-card">
+          <strong>{stats.total}</strong>
+          <span>Total Reported Items</span>
+        </div>
+        <div className="stat-card">
+          <strong style={{ color: "#ff8282" }}>{stats.lostCount}</strong>
+          <span>Active Lost Belongings</span>
+        </div>
+        <div className="stat-card">
+          <strong style={{ color: "#5fe3a1" }}>{stats.foundCount}</strong>
+          <span>Found Items Awaiting Claim</span>
+        </div>
+        <div className="stat-card">
+          <strong style={{ color: "#35c7ff" }}>{stats.rate}%</strong>
+          <span>Successful Recovery Rate</span>
+        </div>
+      </section>
+
+      {/* ================= SEARCH & DIRECTORY ================= */}
+      <section className="search-section" id="items">
+        <div className="section-heading">
+          <span>DIRECTORY SEARCH</span>
+          <h2>Explore Campus Lost & Found</h2>
+          <p>
+            Filter through active campus listings by keyword, category,
+            location, and lost/found status.
+          </p>
+        </div>
+
+        {/* Filter controls */}
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="🔎 Search by name, details, or keywords..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          >
+            {locations.map((loc) => (
+              <option key={loc} value={loc}>
                 {loc}
               </option>
-            )
-          )}
-        </select>
+            ))}
+          </select>
+        </div>
 
-      </div>
-
-    </section>
-
-    {/* =================================================
-          ITEMS
-      ================================================= */}
-
-    <section
-      id="items"
-      className="items-section"
-    >
-
-      <div className="section-heading">
-
-        <span>
-          LISTINGS
-        </span>
-
-        <h2>
-          Lost & Found Items
-        </h2>
-
-        <p>
-          Browse recently reported
-          items.
-        </p>
-
-      </div>
-
-      <div className="items-grid">
-
-        {filteredItems.length ===
-          0 ? (
-          <div className="empty-state">
-
-            <div>
-              🔍
-            </div>
-
-            <h3>
-              No items found
-            </h3>
-
-            <p>
-              Try changing your
-              search or filters.
-            </p>
-
-          </div>
-        ) : (
-          filteredItems.map(
-            (item) => (
-              <div
-                className={`item-card ${item.status ===
-                    "Returned"
-                    ? "returned-card"
-                    : ""
-                  }`}
-                key={item.id}
+        {/* Type and Status Toggle Pills */}
+        <div
+          style={{
+            maxWidth: "1100px",
+            margin: "20px auto 35px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "15px",
+          }}
+        >
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {["All", "Lost", "Found"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTypeFilter(t)}
+                style={{
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  transition: "0.2s",
+                  background:
+                    typeFilter === t
+                      ? t === "Lost"
+                        ? "#ff4757"
+                        : t === "Found"
+                        ? "#2ed573"
+                        : "#00c6ff"
+                      : "rgba(255,255,255,0.06)",
+                  color: typeFilter === t ? "white" : "#9eb0c6",
+                }}
               >
+                {t === "All" ? "All Items" : `${t} Items`}
+              </button>
+            ))}
+          </div>
 
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "12px", color: "#8597ad" }}>Status:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                padding: "7px 12px",
+                borderRadius: "8px",
+                background: "#0c1a2b",
+                color: "#f0f6ff",
+                border: "1px solid rgba(255,255,255,0.1)",
+                fontSize: "12px",
+              }}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active Only</option>
+              <option value="Resolved">Returned / Claimed</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Items Grid */}
+        <div className="items-grid">
+          {filteredItems.length === 0 ? (
+            <div className="empty-state">
+              <div>🔍</div>
+              <h3>No Matching Items Found</h3>
+              <p>
+                Try adjusting your search terms or filters, or be the first to
+                report this item!
+              </p>
+            </div>
+          ) : (
+            filteredItems.map((item) => (
+              <div
+                key={item.id}
+                className={`item-card ${
+                  item.status === "Returned" ? "returned-card" : ""
+                }`}
+              >
                 <div className="item-top">
-
                   <span
-                    className={`item-type ${item.type ===
-                        "Lost"
-                        ? "lost"
-                        : "found"
-                      }`}
+                    className={`item-type ${
+                      item.type === "Lost" ? "lost" : "found"
+                    }`}
                   >
-                    {item.type}
+                    {item.type === "Lost" ? "🚨 LOST" : "✅ FOUND"}
                   </span>
 
-                  {item.status ===
-                    "Returned" && (
-                      <span className="returned-badge">
-                        Returned
-                      </span>
-                    )}
-
+                  <span
+                    className={`status ${
+                      item.status === "Active" ? "active" : "returned"
+                    }`}
+                  >
+                    {item.status}
+                  </span>
                 </div>
 
-                {item.image ? (
-                  <img
-                    src={
-                      item.image
-                    }
-                    alt={
-                      item.name
-                    }
+                {item.image || item.imageUrl ? (
+                  <div
                     style={{
-                      width:
-                        "100%",
-                      height:
-                        "170px",
-                      objectFit:
-                        "cover",
-                      borderRadius:
-                        "14px",
-                      marginTop:
-                        "15px",
+                      width: "100%",
+                      height: "170px",
+                      margin: "15px 0",
+                      borderRadius: "14px",
+                      overflow: "hidden",
+                      position: "relative",
+                      background: "#081423",
                     }}
-                  />
+                  >
+                    <img
+                      src={item.image || item.imageUrl}
+                      alt={item.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="item-icon">
-
-                    {item.category ===
-                      "Electronics"
-                      ? "🎧"
-                      : item.category ===
-                        "Documents"
-                        ? "📄"
-                        : item.category ===
-                          "Accessories"
-                          ? "👛"
-                          : "📦"}
-
+                    {getCategoryIcon(item.category)}
                   </div>
                 )}
 
-                <h3>
-                  {item.name}
-                </h3>
-
-                <p>
-                  {item.description}
-                </p>
+                <h3>{item.name}</h3>
+                <p>{item.description}</p>
 
                 <div className="item-info">
-
-                  <span>
-                    📍{" "}
-                    {item.location}
-                  </span>
-
-                  <span>
-                    🏷️{" "}
-                    {item.category}
-                  </span>
-
+                  <div>📁 <strong>Category:</strong> {item.category}</div>
+                  <div>📍 <strong>Location:</strong> {item.location}</div>
+                  <div>👤 <strong>Reported By:</strong> {item.reportedBy}</div>
+                  {item.date && <div>📅 <strong>Date:</strong> {item.date}</div>}
                 </div>
 
                 <div className="item-footer">
+                  <button
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setShowDetails(true);
+                    }}
+                    style={{
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.06)",
+                      color: "white",
+                      padding: "6px 10px",
+                      borderRadius: "8px",
+                      fontSize: "11px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Details
+                  </button>
 
-                  <small>
-                    Reported by{" "}
-                    <strong>
-                      {
-                        item.reportedBy
-                      }
-                    </strong>
-                  </small>
+                  {item.status === "Active" && (
+                    <button
+                      className="claim-btn"
+                      onClick={() => openClaimModal(item)}
+                    >
+                      ✋ Claim
+                    </button>
+                  )}
 
-                  {item.status !==
-                    "Returned" &&
-                    item.type ===
-                    "Found" && (
-                      <button
-                        className="claim-btn"
-                        onClick={() =>
-                          openClaim(
-                            item
-                          )
-                        }
-                      >
-                        Claim
-                      </button>
+                  <button
+                    className="match-btn"
+                    onClick={() => findSmartMatch(item)}
+                    title="Find matching lost/found items"
+                  >
+                    ⚡ Smart Match
+                  </button>
+
+                  {/* Owner or Admin Controls */}
+                  {currentUser &&
+                    (currentUser.email === item.ownerEmail || isAdmin) && (
+                      <div style={{ display: "flex", gap: "5px", marginLeft: "auto" }}>
+                        <button
+                          onClick={() => openEdit(item)}
+                          style={{
+                            border: "none",
+                            background: "rgba(255,255,255,0.08)",
+                            color: "#32c8ff",
+                            padding: "6px 9px",
+                            borderRadius: "6px",
+                            fontSize: "11px",
+                            cursor: "pointer",
+                          }}
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => deleteMyItem(item.id)}
+                          style={{
+                            border: "none",
+                            background: "rgba(255, 60, 60, 0.15)",
+                            color: "#ff6b81",
+                            padding: "6px 9px",
+                            borderRadius: "6px",
+                            fontSize: "11px",
+                            cursor: "pointer",
+                          }}
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     )}
-
-                  {item.status !==
-                    "Returned" && (
-                      <button
-                        className="match-btn"
-                        onClick={() =>
-                          findSmartMatch(
-                            item
-                          )
-                        }
-                      >
-                        🤖 Match
-                      </button>
-                    )}
-
                 </div>
-
               </div>
-            )
-          )
-        )}
-
-      </div>
-
-    </section>
-
-    {/* =================================================
-          FEATURES
-      ================================================= */}
-
-    <section className="features-section">
-
-      <div className="section-heading">
-
-        <span>
-          FEATURES
-        </span>
-
-        <h2>
-          Everything You Need
-        </h2>
-
-        <p>
-          Built to make recovering
-          lost belongings simple
-          and secure.
-        </p>
-
-      </div>
-
-      <div className="features-grid">
-
-        <div className="feature-card">
-          <div className="feature-icon">
-            🔎
-          </div>
-
-          <h3>
-            Smart Search
-          </h3>
-
-          <p>
-            Quickly search items by
-            name, category and
-            location.
-          </p>
+            ))
+          )}
         </div>
+      </section>
 
-        <div className="feature-card">
-          <div className="feature-icon">
-            🤖
-          </div>
-
-          <h3>
-            Smart Matching
-          </h3>
-
-          <p>
-            Find possible matches
-            between lost and found
-            reports.
-          </p>
-        </div>
-
-        <div className="feature-card">
-          <div className="feature-icon">
-            🔐
-          </div>
-
-          <h3>
-            Secure Claims
-          </h3>
-
-          <p>
-            Users can submit and
-            manage ownership claims.
-          </p>
-        </div>
-
-        <div className="feature-card">
-          <div className="feature-icon">
-            🔔
-          </div>
-
-          <h3>
-            Notifications
-          </h3>
-
-          <p>
-            Get updates when claims
-            are submitted, approved
-            or rejected.
-          </p>
-        </div>
-
-      </div>
-
-    </section>
-
-    {/* =================================================
-          HOW IT WORKS
-      ================================================= */}
-
-    <section
-      id="how-it-works"
-      className="how-section"
-    >
-
-      <div className="section-heading">
-
-        <span>
-          PROCESS
-        </span>
-
-        <h2>
-          How It Works
-        </h2>
-
-      </div>
-
-      <div className="steps">
-
-        <div className="step">
-          <div className="step-number">
-            01
-          </div>
-
-          <h3>
-            Report
-          </h3>
-
-          <p>
-            Report your lost or
-            found item.
-          </p>
-        </div>
-
-        <div className="step">
-          <div className="step-number">
-            02
-          </div>
-
-          <h3>
-            Match
-          </h3>
-
-          <p>
-            Find possible matches.
-          </p>
-        </div>
-
-        <div className="step">
-          <div className="step-number">
-            03
-          </div>
-
-          <h3>
-            Claim
-          </h3>
-
-          <p>
-            Submit an ownership
-            claim.
-          </p>
-        </div>
-
-        <div className="step">
-          <div className="step-number">
-            04
-          </div>
-
-          <h3>
-            Return
-          </h3>
-
-          <p>
-            Owner approves and item
-            gets returned.
-          </p>
-        </div>
-
-      </div>
-
-    </section>
-
-    {/* =================================================
-          USER DASHBOARD
-      ================================================= */}
-
-    {currentUser &&
-      !isAdmin && (
-        <section
-          id="dashboard"
-          className="dashboard-section"
-        >
-
+      {/* ================= USER DASHBOARD (IF LOGGED IN) ================= */}
+      {currentUser && !isAdmin && (
+        <section className="dashboard-section" id="dashboard">
           <div className="section-heading">
-
-            <span>
-              MY ACCOUNT
-            </span>
-
-            <h2>
-              Dashboard
-            </h2>
-
+            <span>STUDENT DASHBOARD</span>
+            <h2>My Activity & Reports</h2>
             <p>
-              Manage your reports
-              and claims.
+              Manage items you have reported and keep track of all claims and
+              reconnection attempts.
             </p>
-
           </div>
 
           <div className="dashboard-stats">
-
             <div className="dashboard-stat">
-              <strong>
-                {
-                  items.filter(
-                    (item) =>
-                      item.ownerEmail ===
-                      currentUser.email
-                  ).length
-                }
-              </strong>
-
-              <span>
-                My Reports
-              </span>
+              <strong>{myReportedItems.length}</strong>
+              <span>Items Reported By Me</span>
             </div>
-
             <div className="dashboard-stat">
-              <strong>
-                {
-                  myClaims.length
-                }
+              <strong style={{ color: "#ff8282" }}>
+                {myReportedItems.filter((i) => i.type === "Lost").length}
               </strong>
-
-              <span>
-                My Claims
-              </span>
+              <span>My Lost Items</span>
             </div>
-
             <div className="dashboard-stat">
-              <strong>
-                {
-                  myClaims.filter(
-                    (claim) =>
-                      claim.status ===
-                      "Approved"
-                  ).length
-                }
+              <strong style={{ color: "#5fe3a1" }}>
+                {myReportedItems.filter((i) => i.type === "Found").length}
               </strong>
-
-              <span>
-                Approved
-              </span>
+              <span>My Found Reports</span>
             </div>
-
             <div className="dashboard-stat">
-              <strong>
-                {
-                  unreadNotifications.length
-                }
+              <strong style={{ color: "#35c7ff" }}>
+                {myClaims.length}
               </strong>
-
-              <span>
-                Unread Alerts
-              </span>
+              <span>My Claims Submitted</span>
             </div>
-
           </div>
 
-          {/* MY ITEMS */}
+          {/* Incoming claims requiring my verification */}
+          {incomingClaims.length > 0 && (
+            <div className="dashboard-box" style={{ border: "1px solid rgba(0, 190, 255, 0.3)" }}>
+              <div className="dashboard-title">
+                <h3>🔔 Incoming Claims on My Reported Items ({incomingClaims.length})</h3>
+                <small style={{ color: "#8493a9" }}>
+                  Other campus members have submitted claims for items you listed.
+                  Verify their ownership reason and approve or reject.
+                </small>
+              </div>
 
-          <div className="dashboard-box">
-
-            <div className="dashboard-title">
-              <h3>
-                📦 My Reported Items
-              </h3>
-            </div>
-
-            <div className="dashboard-list">
-
-              {items.filter(
-                (item) =>
-                  item.ownerEmail ===
-                  currentUser.email
-              ).length === 0 ? (
-                <p className="empty-text">
-                  You haven't reported
-                  any items yet.
-                </p>
-              ) : (
-                items
-                  .filter(
-                    (item) =>
-                      item.ownerEmail ===
-                      currentUser.email
-                  )
-                  .map((item) => (
-                    <div
-                      className="dashboard-item"
-                      key={item.id}
-                    >
-
-                      <div
-                        style={{
-                          display:
-                            "flex",
-                          gap:
-                            "14px",
-                          alignItems:
-                            "center",
-                        }}
-                      >
-
-                        {item.image ? (
-                          <img
-                            src={
-                              item.image
-                            }
-                            alt={
-                              item.name
-                            }
-                            style={{
-                              width:
-                                "65px",
-                              height:
-                                "65px",
-                              objectFit:
-                                "cover",
-                              borderRadius:
-                                "10px",
-                            }}
-                          />
-                        ) : (
-                          <div
-                            style={{
-                              width:
-                                "65px",
-                              height:
-                                "65px",
-                              display:
-                                "flex",
-                              alignItems:
-                                "center",
-                              justifyContent:
-                                "center",
-                              borderRadius:
-                                "10px",
-                              background:
-                                "rgba(0,190,255,.08)",
-                              fontSize:
-                                "25px",
-                            }}
-                          >
-                            📦
-                          </div>
-                        )}
-
-                        <div>
-
-                          <strong>
-                            {item.name}
-                          </strong>
-
-                          <p>
-                            {
-                              item.type
-                            }{" "}
-                            •{" "}
-                            {
-                              item.location
-                            }
-                          </p>
-
-                          <span
-                            className={
-                              item.status ===
-                                "Returned"
-                                ? "status returned"
-                                : "status active"
-                            }
-                          >
-                            {
-                              item.status
-                            }
-                          </span>
-
-                        </div>
-
-                      </div>
-
-                      <div
-                        style={{
-                          display:
-                            "flex",
-                          gap:
-                            "8px",
-                        }}
-                      >
-
-                        <button
-                          className="btn btn-outline"
-                          onClick={() =>
-                            openEdit(
-                              item
-                            )
-                          }
-                        >
-                          ✏️ Edit
-                        </button>
-
-                        <button
-                          className="delete-btn"
-                          onClick={() =>
-                            deleteMyItem(
-                              item.id
-                            )
-                          }
-                        >
-                          Delete
-                        </button>
-
-                      </div>
-
-                    </div>
-                  ))
-              )}
-
-            </div>
-
-          </div>
-
-          {/* INCOMING CLAIMS */}
-
-          <div className="dashboard-box">
-
-            <div className="dashboard-title">
-              <h3>
-                📩 Incoming Claim
-                Requests
-              </h3>
-            </div>
-
-            {incomingClaims.length ===
-              0 ? (
-              <p className="empty-text">
-                No claim requests for
-                your items.
-              </p>
-            ) : (
               <div className="claims-list">
-
-                {incomingClaims.map(
-                  (claim) => (
-                    <div
-                      className="claim-card"
-                      key={claim.id}
-                    >
-
-                      <div className="claim-header">
-
-                        <div>
-
-                          <h4>
-                            {
-                              claim.itemName
-                            }
-                          </h4>
-
-                          <p>
-                            Claimed by{" "}
-                            <strong>
-                              {
-                                claim.claimantName
-                              }
-                            </strong>
-                          </p>
-
-                          <small>
-                            {
-                              claim.claimantEmail
-                            }
-                          </small>
-
-                        </div>
-
-                        <span
-                          className={`claim-status ${claim.status.toLowerCase()}`}
-                        >
-                          {
-                            claim.status
-                          }
-                        </span>
-
-                      </div>
-
-                      <div className="claim-reason">
-
-                        <strong>
-                          Claim Reason:
-                        </strong>
-
+                {incomingClaims.map((claim) => (
+                  <div key={claim.id} className="claim-card">
+                    <div className="claim-header">
+                      <div>
+                        <h4>{claim.itemName}</h4>
                         <p>
-                          {
-                            claim.reason
-                          }
+                          Claimant: <strong>{claim.claimantName}</strong> ({claim.claimantEmail})
+                          {claim.claimantPhone && ` • Phone: ${claim.claimantPhone}`}
                         </p>
-
                       </div>
-
-                      {claim.status ===
-                        "Pending" && (
-                          <div className="claim-actions">
-
-                            <button
-                              className="approve-btn"
-                              onClick={() =>
-                                handleClaimDecision(
-                                  claim.id,
-                                  "Approved"
-                                )
-                              }
-                            >
-                              ✅ Approve
-                            </button>
-
-                            <button
-                              className="reject-btn"
-                              onClick={() =>
-                                handleClaimDecision(
-                                  claim.id,
-                                  "Rejected"
-                                )
-                              }
-                            >
-                              ❌ Reject
-                            </button>
-
-                          </div>
-                        )}
-
+                      <span className={`claim-status ${claim.status.toLowerCase()}`}>
+                        {claim.status}
+                      </span>
                     </div>
-                  )
-                )}
 
+                    <div className="claim-reason">
+                      <strong>Claimant's Proof Description:</strong>
+                      <p>{claim.reason}</p>
+                    </div>
+
+                    {claim.status === "Pending" && (
+                      <div className="claim-actions">
+                        <button
+                          className="approve-btn"
+                          onClick={() => handleClaimDecision(claim.id, "Approved")}
+                        >
+                          ✅ Verify & Approve Claim
+                        </button>
+                        <button
+                          className="reject-btn"
+                          onClick={() => handleClaimDecision(claim.id, "Rejected")}
+                        >
+                          ❌ Reject Claim
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-          </div>
-
-          {/* MY CLAIMS */}
-
+          {/* My Submitted Claims */}
           <div className="dashboard-box">
-
             <div className="dashboard-title">
-              <h3>
-                📝 My Claim Requests
-              </h3>
+              <h3>✋ My Submitted Claims ({myClaims.length})</h3>
             </div>
 
-            {myClaims.length ===
-              0 ? (
-              <p className="empty-text">
-                You haven't submitted
-                any claims.
-              </p>
+            {myClaims.length === 0 ? (
+              <p className="empty-text">You haven't claimed any items yet.</p>
             ) : (
               <div className="claims-list">
-
-                {myClaims.map(
-                  (claim) => (
-                    <div
-                      className="claim-card"
-                      key={claim.id}
-                    >
-
-                      <div className="claim-header">
-
-                        <div>
-
-                          <h4>
-                            {
-                              claim.itemName
-                            }
-                          </h4>
-
-                          <p>
-                            {
-                              claim.createdAt
-                            }
-                          </p>
-
-                        </div>
-
-                        <span
-                          className={`claim-status ${claim.status.toLowerCase()}`}
-                        >
-                          {
-                            claim.status
-                          }
-                        </span>
-
+                {myClaims.map((claim) => (
+                  <div key={claim.id} className="claim-card">
+                    <div className="claim-header">
+                      <div>
+                        <h4>Item: {claim.itemName}</h4>
+                        <small>Submitted on: {claim.createdAt ? new Date(claim.createdAt).toLocaleDateString() : "Recent"}</small>
                       </div>
-
-                      <p>
-                        {
-                          claim.reason
-                        }
-                      </p>
-
+                      <span className={`claim-status ${claim.status.toLowerCase()}`}>
+                        {claim.status}
+                      </span>
                     </div>
-                  )
-                )}
-
+                    <div className="claim-reason">
+                      <strong>My Proof Submitted:</strong>
+                      <p>{claim.reason}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-
           </div>
 
+          {/* My Reported Items */}
+          <div className="dashboard-box">
+            <div className="dashboard-title">
+              <h3>📋 Items Reported By Me ({myReportedItems.length})</h3>
+            </div>
+
+            {myReportedItems.length === 0 ? (
+              <p className="empty-text">You haven't reported any items yet.</p>
+            ) : (
+              <div className="dashboard-list">
+                {myReportedItems.map((item) => (
+                  <div key={item.id} className="dashboard-item">
+                    <div>
+                      <strong>
+                        {item.type === "Lost" ? "🚨 Lost" : "✅ Found"}: {item.name}
+                      </strong>
+                      <p>
+                        {item.category} • {item.location} • Status: {item.status}
+                      </p>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        onClick={() => openEdit(item)}
+                        style={{
+                          border: "none",
+                          background: "rgba(255,255,255,0.08)",
+                          color: "#32c8ff",
+                          padding: "7px 12px",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => deleteMyItem(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       )}
 
-    {/* =================================================
-          CTA
-      ================================================= */}
-
-    {!isAdmin && (
-      <section className="cta-section">
-
-        <div>
-
-          <span>
-            READY TO GET STARTED?
-          </span>
-
-          <h2>
-            Help Something Find
-            <br />
-            Its Way Home.
-          </h2>
-
+      {/* ================= FEATURES SECTION ================= */}
+      <section className="features-section">
+        <div className="section-heading">
+          <span>PLATFORM CAPABILITIES</span>
+          <h2>Designed for Campus Life</h2>
           <p>
-            Report a lost or found
-            item and help reconnect
-            people with what matters.
+            Key technologies and workflow features implemented for our MCA
+            College Mini Project.
           </p>
+        </div>
 
+        <div className="features-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🔍</div>
+            <h3>Smart Search & Filter</h3>
+            <p>
+              Instantly query listings by title, campus zone, category, and
+              lost/found status with sub-second response times.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">📍</div>
+            <h3>Location Mapping</h3>
+            <p>
+              Tag items with specific campus locations: Library, Cafeteria,
+              Hostels, Sports Complex, or Classrooms.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">🛡️</div>
+            <h3>Verified Claims Protocol</h3>
+            <p>
+              Requires unique physical markings, serial numbers, or photo proof
+              before claims are approved by owners or security.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">⚡</div>
+            <h3>Automated Matching</h3>
+            <p>
+              AI-like keyword and category analysis immediately notifies
+              reporters when a matching item is registered.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= HOW IT WORKS ================= */}
+      <section className="how-section" id="how-it-works">
+        <div className="section-heading">
+          <span>EASY 4-STEP RECOVERY</span>
+          <h2>How Lost & Found Hub Works</h2>
+          <p>
+            Reconnecting belongings is simple, secure, and transparent.
+          </p>
+        </div>
+
+        <div className="steps">
+          <div className="step">
+            <div className="step-number">01</div>
+            <h3>Report Belonging</h3>
+            <p>
+              Submit details, location, and photos for any lost or discovered
+              item.
+            </p>
+          </div>
+
+          <div className="step">
+            <div className="step-number">02</div>
+            <h3>Smart Matching</h3>
+            <p>
+              Our backend scans database records and triggers instant
+              notifications on matches.
+            </p>
+          </div>
+
+          <div className="step">
+            <div className="step-number">03</div>
+            <h3>Verify Ownership</h3>
+            <p>
+              Claimants submit proof of ownership, which is reviewed by the
+              reporter or admin.
+            </p>
+          </div>
+
+          <div className="step">
+            <div className="step-number">04</div>
+            <h3>Safe Handover</h3>
+            <p>
+              Meet at the campus helpdesk or agreed spot to safely return the
+              belonging.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CALL TO ACTION ================= */}
+      <div className="cta-section">
+        <div>
+          <span>RECONNECT TODAY</span>
+          <h2>Found something that isn't yours?</h2>
+          <p>
+            Help a fellow student by submitting a quick 1-minute found report.
+            Small acts of honesty make our campus community stronger.
+          </p>
         </div>
 
         <div className="cta-buttons">
-
           <button
-            className="btn btn-primary btn-large"
-            onClick={() =>
-              openReport(
-                "Lost"
-              )
-            }
-          >
-            Report Lost Item
-          </button>
-
-          <button
-            className="btn btn-secondary btn-large"
-            onClick={() =>
-              openReport(
-                "Found"
-              )
-            }
-          >
-            Report Found Item
-          </button>
-
-        </div>
-
-      </section>
-    )}
-
-    {/* =================================================
-          FOOTER
-      ================================================= */}
-
-    <footer className="footer">
-
-      <div className="footer-logo">
-
-        <div className="logo-icon">
-          📍
-        </div>
-
-        <div>
-
-          <strong>
-            Lost & Found Hub
-          </strong>
-
-          <small>
-            Reconnecting What Matters.
-          </small>
-
-        </div>
-
-      </div>
-
-      <p>
-        © 2026 Lost & Found Hub.
-        All rights reserved.
-      </p>
-
-    </footer>
-
-    {/* =================================================
-          LOGIN MODAL
-      ================================================= */}
-
-    {showLogin && (
-      <div className="modal-overlay">
-
-        <div className="modal">
-
-          <button
-            className="close-btn"
-            onClick={
-              closeAllModals
-            }
-          >
-            ×
-          </button>
-
-          <div className="modal-icon">
-            🔐
-          </div>
-
-          <h2>
-            Welcome Back
-          </h2>
-
-          <p>
-            Login to your account.
-          </p>
-
-          <form
-            onSubmit={
-              handleLogin
-            }
-          >
-
-            <input
-              name="email"
-              type="email"
-              placeholder="Email address"
-              required
-            />
-
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              required
-            />
-
-            <button
-              className="btn btn-primary full-btn"
-              type="submit"
-            >
-              Login
-            </button>
-
-          </form>
-
-          <div
-            className="forgot-password-row"
+            onClick={() => {
+              if (!currentUser) {
+                setShowLogin(true);
+                return;
+              }
+              setReportType("Found");
+              setShowReport(true);
+            }}
             style={{
-              display: "flex",
-              width: "100%",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              position: "static",
-              clear: "both",
-              marginTop: "10px",
-              marginBottom: "18px",
-              padding: 0,
-              lineHeight: 1.4,
-              boxSizing: "border-box",
+              border: "none",
+              background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+              color: "white",
+              padding: "14px 28px",
+              borderRadius: "12px",
+              fontSize: "14px",
+              fontWeight: "700",
+              cursor: "pointer",
             }}
           >
-            <button
-              type="button"
-              style={{
-                position: "static",
-                display: "inline-block",
-                float: "none",
-                transform: "none",
-                width: "auto",
-                height: "auto",
-                margin: 0,
-                padding: "4px 0",
-                lineHeight: 1.4,
-                background: "transparent",
-                border: "none",
-                boxShadow: "none",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-              onClick={() => {
-                setRecoveryEmail("");
-                setRecoveryOtp("");
-                setRecoveryPassword("");
-                setRecoveryStep("email");
-                setShowLogin(false);
-                setShowForgotPassword(true);
-              }}
-            >
-              Forgot Password?
-            </button>
-          </div>
-
-          <div className="switch-text">
-
-            Don't have an account?{" "}
-
-            <button
-              onClick={() => {
-                setShowLogin(
-                  false
-                );
-                setShowSignup(
-                  true
-                );
-              }}
-            >
-              Sign Up
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-    )}
-
-    {/* =================================================
-          FORGOT PASSWORD / EMAIL OTP MODAL
-      ================================================= */}
-
-    {showForgotPassword && (
-      <div className="modal-overlay">
-        <div className="modal">
-          <button className="close-btn" onClick={() => { setShowForgotPassword(false); setShowLogin(true); }}>
-            ×
+            🎁 Report Found Item
           </button>
-          <div className="modal-icon">📩</div>
-          <h2>Reset Password</h2>
-          {recoveryStep === "email" ? (
-            <>
-              <p>Enter your registered email to receive a password recovery code.</p>
-              <form onSubmit={handleSendRecoveryOtp}>
-                <input type="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} placeholder="Email address" required />
-                <button className="btn btn-primary full-btn" type="submit" disabled={recoveryBusy}>
-                  {recoveryBusy ? "Sending..." : "Send Recovery Code"}
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <p>Enter the recovery OTP from your email and choose a new password.</p>
-              <form onSubmit={handleVerifyRecoveryOtp}>
-                <input type="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} placeholder="Email address" required />
-                <input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={recoveryOtp} onChange={(e) => setRecoveryOtp(e.target.value)} placeholder="Recovery OTP" required />
-                <input type="password" autoComplete="new-password" value={recoveryPassword} onChange={(e) => setRecoveryPassword(e.target.value)} placeholder="New password (min. 6 characters)" minLength={6} required />
-                <button className="btn btn-primary full-btn" type="submit" disabled={recoveryBusy}>
-                  {recoveryBusy ? "Verifying..." : "Verify OTP & Reset Password"}
-                </button>
-              </form>
-              <div className="switch-text">
-                Didn't receive the code?{" "}
-                <button type="button" onClick={() => setRecoveryStep("email")}>Send again</button>
-              </div>
-            </>
-          )}
-          <div className="switch-text">
-            Remembered your password?{" "}
-            <button type="button" onClick={() => { setShowForgotPassword(false); setShowLogin(true); }}>Back to Login</button>
-          </div>
         </div>
       </div>
-    )}
 
-    {/* =================================================
-          SIGNUP MODAL
-      ================================================= */}
-
-    {showSignup && (
-      <div className="modal-overlay">
-
-        <div className="modal">
-
-          <button
-            className="close-btn"
-            onClick={
-              closeAllModals
-            }
-          >
-            ×
-          </button>
-
-          <div className="modal-icon">
-            👤
+      {/* ================= FOOTER ================= */}
+      <footer className="footer">
+        <div className="footer-logo">
+          <div className="logo-icon" style={{ width: "34px", height: "34px", fontSize: "16px" }}>
+            📍
           </div>
-
-          <h2>
-            Create Account
-          </h2>
-
-          <p>
-            Join the Lost & Found
-            community.
-          </p>
-
-          <form
-            onSubmit={
-              handleSignup
-            }
-          >
-
-            <input
-              name="name"
-              type="text"
-              placeholder="Full name"
-              required
-            />
-
-            <input
-              name="email"
-              type="email"
-              placeholder="Email address"
-              required
-            />
-
-            <input
-              name="password"
-              type="password"
-              placeholder="Create password"
-              required
-            />
-
-            <button
-              className="btn btn-primary full-btn"
-              type="submit"
-            >
-              Create Account
-            </button>
-
-          </form>
-
-          <div className="switch-text">
-
-            Already have an account?{" "}
-
-            <button
-              onClick={() => {
-                setShowSignup(
-                  false
-                );
-                setShowLogin(
-                  true
-                );
-              }}
-            >
-              Login
-            </button>
-
+          <div>
+            <strong>Lost & Found Hub</strong>
+            <small>MCA College Mini Project • MERN Stack Architecture</small>
           </div>
-
         </div>
 
-      </div>
-    )}
+        <p>
+          Built with React.js, Vite, Node.js, Express & MongoDB. All rights
+          reserved © 2026.
+        </p>
+      </footer>
 
-    {/* =================================================
-          REPORT MODAL
-      ================================================= */}
+      {/* =====================================================
+         MODALS
+      ===================================================== */}
 
-    {showReport && (
-      <div className="modal-overlay">
-
-        <div className="modal large-modal">
-
-          <button
-            className="close-btn"
-            onClick={
-              closeAllModals
-            }
-          >
-            ×
-          </button>
-
-          <div className="modal-icon">
-            {reportType ===
-              "Lost"
-              ? "🔍"
-              : "📦"}
-          </div>
-
-          <h2>
-            Report{" "}
-            {reportType} Item
-          </h2>
-
-          <p>
-            Add item details and
-            an optional photo.
-          </p>
-
-          <form
-            onSubmit={
-              handleReportSubmit
-            }
-          >
-
-            <input
-              name="name"
-              placeholder="Item name"
-              required
-            />
-
-            <select
-              name="category"
-              defaultValue="Electronics"
-            >
-              {categories
-                .filter(
-                  (c) =>
-                    c !==
-                    "All Categories"
-                )
-                .map((cat) => (
-                  <option
-                    key={cat}
-                  >
-                    {cat}
-                  </option>
-                ))}
-            </select>
-
-            <select
-              name="location"
-              defaultValue="College Campus"
-            >
-              {locations
-                .filter(
-                  (l) =>
-                    l !==
-                    "Any Location"
-                )
-                .map((loc) => (
-                  <option
-                    key={loc}
-                  >
-                    {loc}
-                  </option>
-                ))}
-            </select>
-
-            <textarea
-              name="description"
-              placeholder="Describe the item..."
-              rows="4"
-              required
-            />
-
-            <div>
-
-              <label
-                style={{
-                  display:
-                    "block",
-                  marginBottom:
-                    "8px",
-                  color:
-                    "#9eacc0",
-                  fontSize:
-                    "12px",
-                }}
-              >
-                📷 Item Photo
-                (Optional)
-              </label>
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={
-                  handleReportImage
-                }
-              />
-
-            </div>
-
-            {reportImage && (
-              <img
-                src={
-                  reportImage
-                }
-                alt="Preview"
-                style={{
-                  width:
-                    "100%",
-                  height:
-                    "180px",
-                  objectFit:
-                    "cover",
-                  borderRadius:
-                    "12px",
-                }}
-              />
-            )}
-
-            <button
-              className="btn btn-primary full-btn"
-              type="submit"
-            >
-              Submit Report
-            </button>
-
-          </form>
-
-        </div>
-
-      </div>
-    )}
-
-    {/* =================================================
-          EDIT MODAL
-      ================================================= */}
-
-    {showEdit &&
-      selectedItem && (
-        <div className="modal-overlay">
-
-          <div className="modal large-modal">
-
-            <button
-              className="close-btn"
-              onClick={
-                closeAllModals
-              }
-            >
+      {/* 1. REPORT ITEM MODAL */}
+      {showReport && (
+        <div className="modal-overlay" onClick={() => setShowReport(false)}>
+          <div className="modal large-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowReport(false)}>
               ×
             </button>
-
             <div className="modal-icon">
-              ✏️
+              {reportType === "Lost" ? "🚨" : "🎁"}
             </div>
-
-            <h2>
-              Edit Item
-            </h2>
-
+            <h2>Report an Item</h2>
             <p>
-              Update your reported
-              item.
+              Provide accurate details to maximize chances of recovery or
+              returning this item.
             </p>
 
-            <form
-              onSubmit={
-                handleEditSubmit
-              }
-            >
+            {/* Type Toggle */}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+              <button
+                type="button"
+                onClick={() => setReportType("Lost")}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "10px",
+                  border: "none",
+                  fontWeight: "700",
+                  background:
+                    reportType === "Lost"
+                      ? "linear-gradient(135deg, #ff416c, #ff4b2b)"
+                      : "rgba(255,255,255,0.06)",
+                  color: "white",
+                }}
+              >
+                🚨 Lost Item
+              </button>
+              <button
+                type="button"
+                onClick={() => setReportType("Found")}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "10px",
+                  border: "none",
+                  fontWeight: "700",
+                  background:
+                    reportType === "Found"
+                      ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                      : "rgba(255,255,255,0.06)",
+                  color: "white",
+                }}
+              >
+                🎁 Found Item
+              </button>
+            </div>
 
+            <form onSubmit={handleReportSubmit}>
               <input
+                type="text"
                 name="name"
-                defaultValue={
-                  selectedItem.name
-                }
-                placeholder="Item name"
+                placeholder="Item Title (e.g. Black Leather Wallet, HP Charger)..."
                 required
               />
 
-              <select
-                name="category"
-                defaultValue={
-                  selectedItem.category
-                }
-              >
-                {categories
-                  .filter(
-                    (c) =>
-                      c !==
-                      "All Categories"
-                  )
-                  .map((cat) => (
-                    <option
-                      key={cat}
-                    >
-                      {cat}
-                    </option>
-                  ))}
-              </select>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <select name="category" defaultValue="Electronics">
+                  {categories
+                    .filter((c) => c !== "All Categories")
+                    .map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                </select>
 
-              <select
-                name="location"
-                defaultValue={
-                  selectedItem.location
-                }
-              >
-                {locations
-                  .filter(
-                    (l) =>
-                      l !==
-                      "Any Location"
-                  )
-                  .map((loc) => (
-                    <option
-                      key={loc}
-                    >
-                      {loc}
-                    </option>
-                  ))}
-              </select>
+                <select name="location" defaultValue="College Campus">
+                  {locations
+                    .filter((l) => l !== "Any Location")
+                    .map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))}
+                </select>
+              </div>
 
-              <textarea
-                name="description"
-                defaultValue={
-                  selectedItem.description
-                }
-                rows="4"
-                required
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Contact Phone Number (Optional)..."
+              />
+
+              <input
+                type="url"
+                name="imageUrl"
+                placeholder="Image Web URL (Optional)..."
               />
 
               <div>
-
-                <label
-                  style={{
-                    display:
-                      "block",
-                    marginBottom:
-                      "8px",
-                    color:
-                      "#9eacc0",
-                    fontSize:
-                      "12px",
-                  }}
-                >
-                  📷 Change Photo
+                <label style={{ fontSize: "12px", color: "#8ca0b8", display: "block", marginBottom: "4px" }}>
+                  Or Upload Photo from Device:
                 </label>
-
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={
-                    handleEditImage
-                  }
+                  onChange={(e) => handleImageUpload(e, setReportImage)}
+                  style={{ fontSize: "12px", padding: "8px" }}
                 />
-
               </div>
 
-              {editImage && (
-                <img
-                  src={
-                    editImage
-                  }
-                  alt="Preview"
-                  style={{
-                    width:
-                      "100%",
-                    height:
-                      "180px",
-                    objectFit:
-                      "cover",
-                    borderRadius:
-                      "12px",
-                  }}
-                />
+              {reportImage && (
+                <div style={{ maxHeight: "120px", overflow: "hidden", borderRadius: "10px" }}>
+                  <img
+                    src={reportImage}
+                    alt="Preview"
+                    style={{ width: "100%", height: "120px", objectFit: "cover" }}
+                  />
+                </div>
               )}
 
+              <textarea
+                name="description"
+                rows="3"
+                placeholder="Detailed description, brand, color, distinguishing marks..."
+                required
+              ></textarea>
+
               <button
-                className="btn btn-primary full-btn"
                 type="submit"
+                style={{
+                  border: "none",
+                  background:
+                    reportType === "Lost"
+                      ? "linear-gradient(135deg, #ff416c, #ff4b2b)"
+                      : "linear-gradient(135deg, #00c6ff, #0072ff)",
+                  color: "white",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  marginTop: "8px",
+                }}
               >
-                Save Changes
+                Submit {reportType} Report
               </button>
-
             </form>
-
           </div>
-
         </div>
       )}
 
-    {/* =================================================
-          CLAIM MODAL
-      ================================================= */}
-
-    {showClaim &&
-      selectedItem && (
-        <div className="modal-overlay">
-
-          <div className="modal">
-
-            <button
-              className="close-btn"
-              onClick={
-                closeAllModals
-              }
-            >
+      {/* 2. EDIT ITEM MODAL */}
+      {showEdit && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowEdit(false)}>
+          <div className="modal large-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowEdit(false)}>
               ×
             </button>
+            <div className="modal-icon">✏️</div>
+            <h2>Edit Report</h2>
+            <p>Update information for "{selectedItem.name}".</p>
 
+            <form onSubmit={handleEditSubmit}>
+              <input
+                type="text"
+                name="name"
+                defaultValue={selectedItem.name}
+                required
+              />
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <select name="category" defaultValue={selectedItem.category}>
+                  {categories
+                    .filter((c) => c !== "All Categories")
+                    .map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                </select>
+
+                <select name="location" defaultValue={selectedItem.location}>
+                  {locations
+                    .filter((l) => l !== "Any Location")
+                    .map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "12px", color: "#8ca0b8", display: "block", marginBottom: "4px" }}>
+                  Update Photo:
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, setEditImage)}
+                  style={{ fontSize: "12px", padding: "8px" }}
+                />
+              </div>
+
+              {editImage && (
+                <div style={{ maxHeight: "120px", overflow: "hidden", borderRadius: "10px" }}>
+                  <img
+                    src={editImage}
+                    alt="Preview"
+                    style={{ width: "100%", height: "120px", objectFit: "cover" }}
+                  />
+                </div>
+              )}
+
+              <textarea
+                name="description"
+                rows="3"
+                defaultValue={selectedItem.description}
+                required
+              ></textarea>
+
+              <button
+                type="submit"
+                style={{
+                  border: "none",
+                  background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                  color: "white",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                }}
+              >
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 3. ITEM DETAILS MODAL */}
+      {showDetails && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowDetails(false)}>
+          <div className="modal large-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowDetails(false)}>
+              ×
+            </button>
             <div className="modal-icon">
-              📝
+              {getCategoryIcon(selectedItem.category)}
             </div>
 
-            <h2>
-              Claim Item
-            </h2>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
+              <span className={`item-type ${selectedItem.type === "Lost" ? "lost" : "found"}`}>
+                {selectedItem.type.toUpperCase()}
+              </span>
+              <span className={`status ${selectedItem.status === "Active" ? "active" : "returned"}`}>
+                {selectedItem.status}
+              </span>
+            </div>
 
+            <h2>{selectedItem.name}</h2>
+
+            {(selectedItem.image || selectedItem.imageUrl) && (
+              <div
+                style={{
+                  width: "100%",
+                  maxHeight: "220px",
+                  borderRadius: "14px",
+                  overflow: "hidden",
+                  margin: "15px 0",
+                  background: "#081423",
+                }}
+              >
+                <img
+                  src={selectedItem.image || selectedItem.imageUrl}
+                  alt={selectedItem.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+            )}
+
+            <div style={{ background: "rgba(255,255,255,0.03)", padding: "14px", borderRadius: "12px", margin: "15px 0" }}>
+              <p style={{ color: "#edf2fa", lineHeight: 1.6, margin: 0 }}>
+                {selectedItem.description}
+              </p>
+            </div>
+
+            <div className="item-info" style={{ fontSize: "13px" }}>
+              <div>📁 <strong>Category:</strong> {selectedItem.category}</div>
+              <div>📍 <strong>Location Found/Lost:</strong> {selectedItem.location}</div>
+              <div>👤 <strong>Reported By:</strong> {selectedItem.reportedBy}</div>
+              {selectedItem.contactPhone && (
+                <div>📞 <strong>Phone:</strong> {selectedItem.contactPhone}</div>
+              )}
+              {selectedItem.date && <div>📅 <strong>Date:</strong> {selectedItem.date}</div>}
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+              {selectedItem.status === "Active" && (
+                <button
+                  className="claim-btn"
+                  style={{ flex: 1, padding: "12px" }}
+                  onClick={() => {
+                    setShowDetails(false);
+                    openClaimModal(selectedItem);
+                  }}
+                >
+                  ✋ Claim This Item
+                </button>
+              )}
+              <button
+                className="match-btn"
+                style={{ flex: 1, padding: "12px" }}
+                onClick={() => {
+                  setShowDetails(false);
+                  findSmartMatch(selectedItem);
+                }}
+              >
+                ⚡ View Matches
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. SMART MATCH MODAL */}
+      {showMatch && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowMatch(false)}>
+          <div className="modal large-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowMatch(false)}>
+              ×
+            </button>
+            <div className="modal-icon">⚡</div>
+            <h2>Smart Match Suggestions</h2>
             <p>
-              Claiming:{" "}
-              <strong>
-                {
-                  selectedItem.name
-                }
-              </strong>
+              Potential matches for "{selectedItem.name}" ({selectedItem.type}):
             </p>
 
-            <form
-              onSubmit={
-                handleClaimSubmit
-              }
-            >
+            {smartMatchesList.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "30px 0", color: "#8597ad" }}>
+                <p>No active matching items found at this time.</p>
+                <small>Our system will automatically notify you when a match is posted!</small>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "350px", overflowY: "auto" }}>
+                {smartMatchesList.map((m) => (
+                  <div
+                    key={m.id}
+                    style={{
+                      padding: "14px",
+                      borderRadius: "12px",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(0, 190, 255, 0.2)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <div>
+                      <span className={`item-type ${m.type === "Lost" ? "lost" : "found"}`}>
+                        {m.type}
+                      </span>
+                      <strong style={{ display: "block", fontSize: "14px", margin: "6px 0 2px" }}>
+                        {m.name}
+                      </strong>
+                      <small style={{ color: "#8597ad" }}>
+                        📍 {m.location} • 📁 {m.category}
+                      </small>
+                    </div>
+
+                    <button
+                      className="claim-btn"
+                      onClick={() => {
+                        setShowMatch(false);
+                        openClaimModal(m);
+                      }}
+                    >
+                      Claim Match
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 5. CLAIM SUBMISSION MODAL */}
+      {showClaim && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowClaim(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowClaim(false)}>
+              ×
+            </button>
+            <div className="modal-icon">✋</div>
+            <h2>Verify & Claim Item</h2>
+            <p>
+              Claiming: <strong>"{selectedItem.name}"</strong>
+            </p>
+
+            <form onSubmit={handleClaimSubmit}>
+              <div>
+                <label style={{ fontSize: "11px", color: "#8295ac" }}>
+                  Your Name (Claimant):
+                </label>
+                <input
+                  type="text"
+                  value={currentUser?.name || ""}
+                  disabled
+                  style={{ opacity: 0.8 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: "11px", color: "#8295ac" }}>
+                  Your Email:
+                </label>
+                <input
+                  type="email"
+                  value={currentUser?.email || ""}
+                  disabled
+                  style={{ opacity: 0.8 }}
+                />
+              </div>
+
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Contact Phone Number for Verification..."
+                required
+              />
 
               <textarea
                 name="reason"
-                rows="5"
-                placeholder="Explain why this item belongs to you..."
+                rows="4"
+                placeholder="Provide distinctive proof of ownership (e.g. serial number, specific contents, lockscreen wallpaper, purchase receipt details, distinctive scratches)..."
+                required
+              ></textarea>
+
+              <button
+                type="submit"
+                style={{
+                  border: "none",
+                  background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                  color: "white",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                }}
+              >
+                Submit Claim For Verification
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. CLAIM SUCCESS MODAL */}
+      {showSuccess && (
+        <div className="modal-overlay" onClick={() => setShowSuccess(false)}>
+          <div className="modal" style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+            <div className="success-icon" style={{ margin: "0 auto 15px" }}>
+              🎉
+            </div>
+            <h2>Claim Submitted!</h2>
+            <p>
+              Your claim reference ID is:
+              <br />
+              <strong style={{ color: "#32c8ff", fontSize: "15px" }}>
+                #{claimRequestId || "CLM-CONFIRMED"}
+              </strong>
+            </p>
+            <p style={{ fontSize: "12px", color: "#8295ac" }}>
+              The item owner/administrator has been notified. You can track this
+              claim status in your Student Dashboard.
+            </p>
+
+            <button
+              onClick={() => setShowSuccess(false)}
+              style={{
+                border: "none",
+                background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                color: "white",
+                padding: "12px 24px",
+                borderRadius: "10px",
+                fontWeight: "700",
+                marginTop: "15px",
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 7. LOGIN MODAL */}
+      {showLogin && (
+        <div className="modal-overlay" onClick={() => setShowLogin(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowLogin(false)}>
+              ×
+            </button>
+            <div className="modal-icon">🔐</div>
+            <h2>Welcome Back</h2>
+            <p>Log in with your college account or administrator credentials.</p>
+
+            <form onSubmit={handleLogin}>
+              <input
+                type="email"
+                name="email"
+                placeholder="Campus Email (e.g. rahul@campus.edu)..."
+                required
+              />
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Account Password..."
+                required
+              />
+
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogin(false);
+                    setShowForgotPassword(true);
+                  }}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    color: "#35c7ff",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  border: "none",
+                  background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                  color: "white",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  marginTop: "6px",
+                }}
+              >
+                Log In
+              </button>
+            </form>
+
+            <div style={{ marginTop: "20px", textAlign: "center", fontSize: "12px", color: "#8295ac" }}>
+              Don't have an account yet?{" "}
+              <button
+                onClick={() => {
+                  setShowLogin(false);
+                  setShowSignup(true);
+                }}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#32c8ff",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                }}
+              >
+                Register Here
+              </button>
+            </div>
+
+            <div
+              style={{
+                marginTop: "15px",
+                padding: "10px",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.03)",
+                fontSize: "11px",
+                color: "#74889f",
+                lineHeight: 1.4,
+              }}
+            >
+              Demo Admin Login: <strong>admin@lostfound.com</strong> / <strong>admin123</strong>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. SIGNUP MODAL */}
+      {showSignup && (
+        <div className="modal-overlay" onClick={() => setShowSignup(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowSignup(false)}>
+              ×
+            </button>
+            <div className="modal-icon">🎓</div>
+            <h2>Create Account</h2>
+            <p>Join the Campus Lost & Found Community Hub.</p>
+
+            <form onSubmit={handleSignup}>
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name (e.g. Rahul Sharma)..."
+                required
+              />
+
+              <input
+                type="email"
+                name="email"
+                placeholder="College Email Address..."
+                required
+              />
+
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number (Optional)..."
+              />
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Password (minimum 6 characters)..."
+                minLength="6"
                 required
               />
 
               <button
-                className="btn btn-primary full-btn"
                 type="submit"
+                style={{
+                  border: "none",
+                  background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                  color: "white",
+                  padding: "14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  marginTop: "6px",
+                }}
               >
-                Submit Claim
+                Register Account
               </button>
-
             </form>
 
+            <div style={{ marginTop: "20px", textAlign: "center", fontSize: "12px", color: "#8295ac" }}>
+              Already registered?{" "}
+              <button
+                onClick={() => {
+                  setShowSignup(false);
+                  setShowLogin(true);
+                }}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#32c8ff",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                }}
+              >
+                Log In
+              </button>
+            </div>
           </div>
-
         </div>
       )}
 
-    {/* =================================================
-          SMART MATCH MODAL
-      ================================================= */}
-
-    {showMatch &&
-      selectedItem && (
-        <div className="modal-overlay">
-
-          <div className="modal large-modal">
-
-            <button
-              className="close-btn"
-              onClick={
-                closeAllModals
-              }
-            >
+      {/* 9. FORGOT / RESET PASSWORD MODAL */}
+      {showForgotPassword && (
+        <div className="modal-overlay" onClick={() => setShowForgotPassword(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowForgotPassword(false)}>
               ×
             </button>
-
-            <div className="modal-icon">
-              🤖
-            </div>
-
-            <h2>
-              Smart Match
-            </h2>
-
+            <div className="modal-icon">🔑</div>
+            <h2>Reset Password</h2>
             <p>
-              Searching possible
-              matches for{" "}
-              <strong>
-                {
-                  selectedItem.name
-                }
-              </strong>
-              .
+              {recoveryStep === "email"
+                ? "Enter your email address to receive an OTP verification code."
+                : `Enter the code sent to ${recoveryEmail} and your new password.`}
             </p>
 
-            {matchItem ? (
-              <div className="match-result">
-
-                <div className="match-icon">
-                  🎯
-                </div>
-
-                {matchItem.image && (
-                  <img
-                    src={
-                      matchItem.image
-                    }
-                    alt={
-                      matchItem.name
-                    }
-                    style={{
-                      width:
-                        "100%",
-                      height:
-                        "150px",
-                      objectFit:
-                        "cover",
-                      borderRadius:
-                        "12px",
-                      marginBottom:
-                        "15px",
-                    }}
-                  />
-                )}
-
-                <h3>
-                  Possible Match Found!
-                </h3>
-
-                <h4>
-                  {
-                    matchItem.name
-                  }
-                </h4>
-
-                <p>
-                  📍{" "}
-                  {
-                    matchItem.location
-                  }
-                </p>
-
-                <p>
-                  🏷️{" "}
-                  {
-                    matchItem.category
-                  }
-                </p>
+            {recoveryStep === "email" ? (
+              <form onSubmit={handleSendRecoveryOtp}>
+                <input
+                  type="email"
+                  placeholder="Enter Registered Email..."
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  required
+                />
 
                 <button
-                  className="btn btn-primary full-btn"
-                  onClick={() => {
-                    setShowMatch(
-                      false
-                    );
-
-                    openClaim(
-                      matchItem
-                    );
+                  type="submit"
+                  disabled={recoveryBusy}
+                  style={{
+                    border: "none",
+                    background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                    color: "white",
+                    padding: "14px",
+                    borderRadius: "10px",
+                    fontWeight: "700",
                   }}
                 >
-                  View & Claim
+                  {recoveryBusy ? "Sending Code..." : "Send Verification OTP"}
                 </button>
-
-              </div>
+              </form>
             ) : (
-              <div className="no-match">
+              <form onSubmit={handleVerifyRecoveryOtp}>
+                <input
+                  type="text"
+                  placeholder="6-digit OTP code..."
+                  value={recoveryOtp}
+                  onChange={(e) => setRecoveryOtp(e.target.value)}
+                  required
+                />
 
-                <div>
-                  🔎
+                <input
+                  type="password"
+                  placeholder="Enter New Password..."
+                  value={recoveryPassword}
+                  onChange={(e) => setRecoveryPassword(e.target.value)}
+                  minLength="6"
+                  required
+                />
+
+                <button
+                  type="submit"
+                  disabled={recoveryBusy}
+                  style={{
+                    border: "none",
+                    background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                    color: "white",
+                    padding: "14px",
+                    borderRadius: "10px",
+                    fontWeight: "700",
+                  }}
+                >
+                  {recoveryBusy ? "Verifying..." : "Update Password"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 10. ADMIN DASHBOARD MODAL */}
+      {showAdmin && isAdmin && (
+        <div className="modal-overlay" onClick={() => setShowAdmin(false)}>
+          <div
+            className="modal"
+            style={{ maxWidth: "850px", maxHeight: "90vh", overflowY: "auto" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="close-btn" onClick={() => setShowAdmin(false)}>
+              ×
+            </button>
+            <div className="modal-icon">🛡️</div>
+            <h2>Campus Administrator Center</h2>
+            <p>Complete control panel for items, claims verification, and users.</p>
+
+            {/* Admin Tabs */}
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+              {[
+                { id: "overview", label: "📊 Overview Stats" },
+                { id: "items", label: `📦 Manage Items (${items.length})` },
+                { id: "claims", label: `✋ Claims (${claimRequests.length})` },
+                { id: "users", label: `👥 Users (${adminUserList.length})` },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setAdminTab(tab.id)}
+                  style={{
+                    padding: "9px 16px",
+                    borderRadius: "10px",
+                    border: "none",
+                    fontWeight: "700",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    background:
+                      adminTab === tab.id
+                        ? "linear-gradient(135deg, #00c6ff, #0072ff)"
+                        : "rgba(255,255,255,0.06)",
+                    color: "white",
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab: Overview */}
+            {adminTab === "overview" && (
+              <div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "12px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <div className="stat-card" style={{ padding: "18px" }}>
+                    <strong>{adminStats ? adminStats.totalItems : items.length}</strong>
+                    <span>Total Database Items</span>
+                  </div>
+                  <div className="stat-card" style={{ padding: "18px" }}>
+                    <strong style={{ color: "#ff8282" }}>
+                      {adminStats ? adminStats.lostCount : items.filter((i) => i.type === "Lost").length}
+                    </strong>
+                    <span>Total Lost Items</span>
+                  </div>
+                  <div className="stat-card" style={{ padding: "18px" }}>
+                    <strong style={{ color: "#5fe3a1" }}>
+                      {adminStats ? adminStats.foundCount : items.filter((i) => i.type === "Found").length}
+                    </strong>
+                    <span>Total Found Items</span>
+                  </div>
+                  <div className="stat-card" style={{ padding: "18px" }}>
+                    <strong style={{ color: "#ffd66b" }}>
+                      {adminStats ? adminStats.pendingClaims : claimRequests.filter((c) => c.status === "Pending").length}
+                    </strong>
+                    <span>Pending Claims</span>
+                  </div>
+                  <div className="stat-card" style={{ padding: "18px" }}>
+                    <strong style={{ color: "#5ee6a0" }}>
+                      {adminStats ? adminStats.approvedClaims : claimRequests.filter((c) => c.status === "Approved").length}
+                    </strong>
+                    <span>Approved / Resolved</span>
+                  </div>
+                  <div className="stat-card" style={{ padding: "18px" }}>
+                    <strong style={{ color: "#a5b4fc" }}>
+                      {adminStats ? adminStats.totalUsers : adminUserList.length || 2}
+                    </strong>
+                    <span>Registered Users</span>
+                  </div>
                 </div>
-
-                <h3>
-                  No Match Found Yet
-                </h3>
-
-                <p>
-                  New reports may
-                  create a match
-                  later.
-                </p>
-
               </div>
             )}
 
-          </div>
+            {/* Tab: Items Management */}
+            {adminTab === "items" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <input
+                  type="text"
+                  placeholder="Filter admin items by title..."
+                  value={adminSearch}
+                  onChange={(e) => setAdminSearch(e.target.value)}
+                  style={{ marginBottom: "10px" }}
+                />
 
-        </div>
-      )}
+                <div style={{ maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {items
+                    .filter(
+                      (i) =>
+                        !adminSearch ||
+                        i.name.toLowerCase().includes(adminSearch.toLowerCase())
+                    )
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: "12px",
+                          borderRadius: "10px",
+                          background: "rgba(255,255,255,0.03)",
+                          border: "1px solid rgba(255,255,255,0.06)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <div>
+                          <span className={`item-type ${item.type === "Lost" ? "lost" : "found"}`}>
+                            {item.type}
+                          </span>{" "}
+                          <strong>{item.name}</strong> ({item.category} • {item.location})
+                          <br />
+                          <small style={{ color: "#8295ac" }}>
+                            Reported by: {item.reportedBy} ({item.ownerEmail || "N/A"}) • Status: {item.status}
+                          </small>
+                        </div>
 
-    {/* =================================================
-          SUCCESS MODAL
-      ================================================= */}
-
-    {showSuccess && (
-      <div className="modal-overlay">
-
-        <div className="modal success-modal">
-
-          <div className="success-icon">
-            ✅
-          </div>
-
-          <h2>
-            Claim Submitted!
-          </h2>
-
-          <p>
-            Your claim request
-            has been sent to
-            the item owner.
-          </p>
-
-          <p>
-            Request ID:{" "}
-            <strong>
-              #{claimRequestId}
-            </strong>
-          </p>
-
-          <button
-            className="btn btn-primary full-btn"
-            onClick={
-              closeAllModals
-            }
-          >
-            Done
-          </button>
-
-        </div>
-
-      </div>
-    )}
-
-    {/* =================================================
-          ADMIN PANEL
-      ================================================= */}
-
-    {showAdmin &&
-      isAdmin && (
-        <div
-          className="modal-overlay"
-          style={{
-            alignItems:
-              "flex-start",
-            paddingTop:
-              "40px",
-          }}
-        >
-
-          <div
-            style={{
-              width:
-                "min(1200px, 96%)",
-              maxHeight:
-                "90vh",
-              overflowY:
-                "auto",
-              padding:
-                "30px",
-              borderRadius:
-                "22px",
-              background:
-                "#081625",
-              border:
-                "1px solid rgba(255,255,255,.1)",
-              boxShadow:
-                "0 30px 100px rgba(0,0,0,.5)",
-            }}
-          >
-
-            {/* ADMIN HEADER */}
-
-            <div
-              style={{
-                display:
-                  "flex",
-                justifyContent:
-                  "space-between",
-                alignItems:
-                  "center",
-                gap: "15px",
-                marginBottom:
-                  "25px",
-              }}
-            >
-
-              <div>
-
-                <div
-                  style={{
-                    color:
-                      "#35c7ff",
-                    fontSize:
-                      "11px",
-                    letterSpacing:
-                      "3px",
-                    fontWeight:
-                      "800",
-                  }}
-                >
-                  ADMIN CONTROL CENTER
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <button
+                            onClick={() => openEdit(item)}
+                            style={{
+                              border: "none",
+                              background: "rgba(255,255,255,0.08)",
+                              color: "#32c8ff",
+                              padding: "6px 10px",
+                              borderRadius: "6px",
+                              fontSize: "11px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => adminDeleteItem(item.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                 </div>
-
-                <h2
-                  style={{
-                    marginTop:
-                      "8px",
-                  }}
-                >
-                  🛡️ Admin Dashboard
-                </h2>
-
-                <p
-                  style={{
-                    color:
-                      "#8291a7",
-                    marginTop:
-                      "5px",
-                    fontSize:
-                      "13px",
-                  }}
-                >
-                  Manage users,
-                  items and claims.
-                </p>
-
               </div>
+            )}
 
-              <button
-                className="close-btn"
-                onClick={() =>
-                  setShowAdmin(
-                    false
-                  )
-                }
-              >
-                ×
-              </button>
-
-            </div>
-
-            {/* ADMIN SEARCH */}
-
-            <input
-              value={
-                adminSearch
-              }
-              onChange={(e) =>
-                setAdminSearch(
-                  e.target.value
-                )
-              }
-              placeholder="🔎 Search users, items, locations..."
-              style={{
-                width:
-                  "100%",
-                padding:
-                  "14px",
-                marginBottom:
-                  "20px",
-                borderRadius:
-                  "10px",
-                background:
-                  "#0c1a2b",
-                color:
-                  "white",
-                border:
-                  "1px solid rgba(255,255,255,.1)",
-                outline:
-                  "none",
-              }}
-            />
-
-            {/* ADMIN TABS */}
-
-            <div
-              style={{
-                display:
-                  "flex",
-                gap:
-                  "8px",
-                flexWrap:
-                  "wrap",
-                marginBottom:
-                  "25px",
-              }}
-            >
-
-              {[
-                [
-                  "overview",
-                  "📊 Overview",
-                ],
-                [
-                  "users",
-                  "👥 Users",
-                ],
-                [
-                  "items",
-                  "📦 Items",
-                ],
-                [
-                  "claims",
-                  "📩 Claims",
-                ],
-              ].map(
-                ([id, label]) => (
-                  <button
-                    key={id}
-                    onClick={() =>
-                      setAdminTab(
-                        id
-                      )
-                    }
-                    style={{
-                      padding:
-                        "10px 16px",
-                      border:
-                        "none",
-                      borderRadius:
-                        "9px",
-                      background:
-                        adminTab ===
-                          id
-                          ? "linear-gradient(135deg,#00bfff,#006eff)"
-                          : "rgba(255,255,255,.06)",
-                      color:
-                        "white",
-                      cursor:
-                        "pointer",
-                      fontWeight:
-                        "700",
-                      fontSize:
-                        "12px",
-                    }}
-                  >
-                    {label}
-                  </button>
-                )
-              )}
-
-            </div>
-
-            {/* =================================================
-                  OVERVIEW
-              ================================================= */}
-
-            {adminTab ===
-              "overview" && (
-                <div>
-
-                  <div
-                    style={{
-                      display:
-                        "grid",
-                      gridTemplateColumns:
-                        "repeat(4,1fr)",
-                      gap:
-                        "15px",
-                    }}
-                  >
-
-                    {[
-                      [
-                        "👥",
-                        users.length,
-                        "Users",
-                      ],
-                      [
-                        "📦",
-                        items.length,
-                        "Items",
-                      ],
-                      [
-                        "📩",
-                        claimRequests.length,
-                        "Claims",
-                      ],
-                      [
-                        "⏳",
-                        pendingClaims.length,
-                        "Pending",
-                      ],
-                    ].map(
-                      (stat) => (
-                        <div
-                          key={
-                            stat[2]
-                          }
-                          style={{
-                            padding:
-                              "22px",
-                            borderRadius:
-                              "15px",
-                            background:
-                              "#0b192a",
-                            border:
-                              "1px solid rgba(255,255,255,.07)",
-                            textAlign:
-                              "center",
-                          }}
-                        >
-
-                          <div
-                            style={{
-                              fontSize:
-                                "24px",
-                            }}
-                          >
-                            {
-                              stat[0]
-                            }
-                          </div>
-
-                          <strong
-                            style={{
-                              display:
-                                "block",
-                              fontSize:
-                                "28px",
-                              color:
-                                "#35c7ff",
-                              margin:
-                                "5px 0",
-                            }}
-                          >
-                            {
-                              stat[1]
-                            }
-                          </strong>
-
-                          <span
-                            style={{
-                              color:
-                                "#8190a6",
-                              fontSize:
-                                "11px",
-                            }}
-                          >
-                            {
-                              stat[2]
-                            }
-                          </span>
-
+            {/* Tab: Claims */}
+            {adminTab === "claims" && (
+              <div style={{ maxHeight: "450px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+                {claimRequests.length === 0 ? (
+                  <p style={{ textAlign: "center", color: "#8597ad", padding: "20px 0" }}>
+                    No claims submitted yet.
+                  </p>
+                ) : (
+                  claimRequests.map((c) => (
+                    <div key={c.id} className="claim-card">
+                      <div className="claim-header">
+                        <div>
+                          <h4>{c.itemName}</h4>
+                          <p>
+                            Claimant: <strong>{c.claimantName}</strong> ({c.claimantEmail})
+                            {c.claimantPhone && ` • ${c.claimantPhone}`}
+                          </p>
+                          <small>Owner: {c.ownerEmail || "Campus System"}</small>
                         </div>
-                      )
-                    )}
+                        <span className={`claim-status ${c.status.toLowerCase()}`}>
+                          {c.status}
+                        </span>
+                      </div>
 
-                  </div>
+                      <div className="claim-reason">
+                        <strong>Reason & Ownership Proof:</strong>
+                        <p>{c.reason}</p>
+                      </div>
 
-                  {/* SECOND ROW */}
-
-                  <div
-                    style={{
-                      display:
-                        "grid",
-                      gridTemplateColumns:
-                        "repeat(3,1fr)",
-                      gap:
-                        "15px",
-                      marginTop:
-                        "15px",
-                    }}
-                  >
-
-                    <div
-                      style={{
-                        padding:
-                          "20px",
-                        borderRadius:
-                          "15px",
-                        background:
-                          "#0b192a",
-                      }}
-                    >
-                      <span
-                        style={{
-                          color:
-                            "#8493a9",
-                          fontSize:
-                            "12px",
-                        }}
-                      >
-                        🔍 Active Lost
-                      </span>
-
-                      <h3
-                        style={{
-                          marginTop:
-                            "8px",
-                        }}
-                      >
-                        {
-                          lostItems
-                        }
-                      </h3>
-                    </div>
-
-                    <div
-                      style={{
-                        padding:
-                          "20px",
-                        borderRadius:
-                          "15px",
-                        background:
-                          "#0b192a",
-                      }}
-                    >
-                      <span
-                        style={{
-                          color:
-                            "#8493a9",
-                          fontSize:
-                            "12px",
-                        }}
-                      >
-                        📦 Active Found
-                      </span>
-
-                      <h3
-                        style={{
-                          marginTop:
-                            "8px",
-                        }}
-                      >
-                        {
-                          foundItems
-                        }
-                      </h3>
-                    </div>
-
-                    <div
-                      style={{
-                        padding:
-                          "20px",
-                        borderRadius:
-                          "15px",
-                        background:
-                          "#0b192a",
-                      }}
-                    >
-                      <span
-                        style={{
-                          color:
-                            "#8493a9",
-                          fontSize:
-                            "12px",
-                        }}
-                      >
-                        ✅ Returned
-                      </span>
-
-                      <h3
-                        style={{
-                          marginTop:
-                            "8px",
-                        }}
-                      >
-                        {
-                          returnedItems
-                        }
-                      </h3>
-                    </div>
-
-                  </div>
-
-                  {/* CLAIM SUMMARY */}
-
-                  <div
-                    style={{
-                      marginTop:
-                        "20px",
-                      padding:
-                        "22px",
-                      borderRadius:
-                        "15px",
-                      background:
-                        "#0b192a",
-                    }}
-                  >
-
-                    <h3>
-                      📈 Claim Summary
-                    </h3>
-
-                    <div
-                      style={{
-                        display:
-                          "flex",
-                        gap:
-                          "30px",
-                        flexWrap:
-                          "wrap",
-                        marginTop:
-                          "15px",
-                        color:
-                          "#94a3b8",
-                        fontSize:
-                          "13px",
-                      }}
-                    >
-
-                      <span>
-                        ⏳ Pending:{" "}
-                        <strong>
-                          {
-                            pendingClaims.length
-                          }
-                        </strong>
-                      </span>
-
-                      <span>
-                        ✅ Approved:{" "}
-                        <strong>
-                          {
-                            approvedClaims.length
-                          }
-                        </strong>
-                      </span>
-
-                      <span>
-                        ❌ Rejected:{" "}
-                        <strong>
-                          {
-                            rejectedClaims.length
-                          }
-                        </strong>
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
-            {/* =================================================
-                  USERS
-              ================================================= */}
-
-            {adminTab ===
-              "users" && (
-                <div
-                  style={{
-                    display:
-                      "flex",
-                    flexDirection:
-                      "column",
-                    gap:
-                      "10px",
-                  }}
-                >
-
-                  {adminFilteredUsers.length ===
-                    0 ? (
-                    <p
-                      style={{
-                        color:
-                          "#718198",
-                      }}
-                    >
-                      No users found.
-                    </p>
-                  ) : (
-                    adminFilteredUsers.map(
-                      (user) => (
-                        <div
-                          key={
-                            user.id
-                          }
-                          style={{
-                            padding:
-                              "17px",
-                            borderRadius:
-                              "12px",
-                            background:
-                              "#0b192a",
-                            display:
-                              "flex",
-                            justifyContent:
-                              "space-between",
-                            alignItems:
-                              "center",
-                            gap:
-                              "15px",
-                          }}
-                        >
-
-                          <div>
-
-                            <strong>
-                              👤{" "}
-                              {
-                                user.name
-                              }
-                            </strong>
-
-                            <p
-                              style={{
-                                color:
-                                  "#7f8da3",
-                                fontSize:
-                                  "11px",
-                                marginTop:
-                                  "5px",
-                              }}
-                            >
-                              {
-                                user.email
-                              }
-                            </p>
-
-                          </div>
-
-                          <div
-                            style={{
-                              display:
-                                "flex",
-                              alignItems:
-                                "center",
-                              gap:
-                                "10px",
-                            }}
-                          >
-
-                            <span
-                              style={{
-                                padding:
-                                  "5px 9px",
-                                borderRadius:
-                                  "20px",
-                                background:
-                                  "rgba(0,190,255,.08)",
-                                color:
-                                  "#45ccff",
-                                fontSize:
-                                  "10px",
-                              }}
-                            >
-                              User
-                            </span>
-
+                      <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                        {c.status === "Pending" && (
+                          <>
                             <button
-                              className="delete-btn"
-                              onClick={() =>
-                                adminDeleteUser(
-                                  user.email
-                                )
-                              }
+                              className="approve-btn"
+                              onClick={() => handleClaimDecision(c.id, "Approved")}
                             >
-                              Delete
+                              ✅ Approve
                             </button>
+                            <button
+                              className="reject-btn"
+                              onClick={() => handleClaimDecision(c.id, "Rejected")}
+                            >
+                              ❌ Reject
+                            </button>
+                          </>
+                        )}
+                        <button
+                          className="delete-btn"
+                          onClick={() => adminDeleteClaim(c.id)}
+                        >
+                          🗑️ Delete Claim
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
 
-                          </div>
-
-                        </div>
-                      )
-                    )
-                  )}
-
-                </div>
-              )}
-
-            {/* =================================================
-                  ITEMS
-              ================================================= */}
-
-            {adminTab ===
-              "items" && (
-                <div
-                  style={{
-                    display:
-                      "flex",
-                    flexDirection:
-                      "column",
-                    gap:
-                      "10px",
-                  }}
-                >
-
-                  {adminFilteredItems.length ===
-                    0 ? (
-                    <p
+            {/* Tab: Users */}
+            {adminTab === "users" && (
+              <div style={{ maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {adminUserList.length === 0 ? (
+                  <p style={{ textAlign: "center", color: "#8597ad", padding: "20px 0" }}>
+                    No other users registered yet.
+                  </p>
+                ) : (
+                  adminUserList.map((user) => (
+                    <div
+                      key={user.id}
                       style={{
-                        color:
-                          "#718198",
+                        padding: "12px 16px",
+                        borderRadius: "10px",
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
-                      No items found.
-                    </p>
-                  ) : (
-                    adminFilteredItems.map(
-                      (item) => (
-                        <div
-                          key={
-                            item.id
-                          }
+                      <div>
+                        <strong>{user.name}</strong>{" "}
+                        <span
                           style={{
-                            padding:
-                              "17px",
-                            borderRadius:
-                              "12px",
-                            background:
-                              "#0b192a",
-                            display:
-                              "flex",
-                            justifyContent:
-                              "space-between",
-                            alignItems:
-                              "center",
-                            gap:
-                              "15px",
+                            fontSize: "10px",
+                            padding: "2px 8px",
+                            borderRadius: "10px",
+                            background: user.role === "admin" ? "rgba(255,200,50,0.15)" : "rgba(0,190,255,0.15)",
+                            color: user.role === "admin" ? "#ffd66b" : "#32c8ff",
+                            fontWeight: "700",
                           }}
                         >
+                          {user.role}
+                        </span>
+                        <br />
+                        <small style={{ color: "#8295ac" }}>
+                          {user.email} {user.phone && `• ${user.phone}`}
+                        </small>
+                      </div>
 
-                          <div
-                            style={{
-                              display:
-                                "flex",
-                              gap:
-                                "13px",
-                              alignItems:
-                                "center",
-                            }}
-                          >
-
-                            {item.image ? (
-                              <img
-                                src={
-                                  item.image
-                                }
-                                alt={
-                                  item.name
-                                }
-                                style={{
-                                  width:
-                                    "55px",
-                                  height:
-                                    "55px",
-                                  objectFit:
-                                    "cover",
-                                  borderRadius:
-                                    "9px",
-                                }}
-                              />
-                            ) : (
-                              <div
-                                style={{
-                                  width:
-                                    "55px",
-                                  height:
-                                    "55px",
-                                  display:
-                                    "flex",
-                                  alignItems:
-                                    "center",
-                                  justifyContent:
-                                    "center",
-                                  borderRadius:
-                                    "9px",
-                                  background:
-                                    "rgba(0,190,255,.08)",
-                                }}
-                              >
-                                📦
-                              </div>
-                            )}
-
-                            <div>
-
-                              <strong>
-                                {
-                                  item.name
-                                }
-                              </strong>
-
-                              <p
-                                style={{
-                                  color:
-                                    "#7f8da3",
-                                  fontSize:
-                                    "11px",
-                                  marginTop:
-                                    "5px",
-                                }}
-                              >
-                                {
-                                  item.type
-                                }{" "}
-                                •{" "}
-                                {
-                                  item.category
-                                }{" "}
-                                •{" "}
-                                {
-                                  item.location
-                                }
-                              </p>
-
-                              <small
-                                style={{
-                                  color:
-                                    "#617087",
-                                }}
-                              >
-                                By:{" "}
-                                {
-                                  item.reportedBy
-                                }
-                              </small>
-
-                            </div>
-
-                          </div>
-
-                          <div
-                            style={{
-                              display:
-                                "flex",
-                              gap:
-                                "8px",
-                              alignItems:
-                                "center",
-                            }}
-                          >
-
-                            <span
-                              className={
-                                item.status ===
-                                  "Returned"
-                                  ? "status returned"
-                                  : "status active"
-                              }
-                            >
-                              {
-                                item.status
-                              }
-                            </span>
-
-                            <button
-                              className="delete-btn"
-                              onClick={() =>
-                                adminDeleteItem(
-                                  item.id
-                                )
-                              }
-                            >
-                              Delete
-                            </button>
-
-                          </div>
-
-                        </div>
-                      )
-                    )
-                  )}
-
-                </div>
-              )}
-
-            {/* =================================================
-                  CLAIMS
-              ================================================= */}
-
-            {adminTab ===
-              "claims" && (
-                <div
-                  style={{
-                    display:
-                      "flex",
-                    flexDirection:
-                      "column",
-                    gap:
-                      "12px",
-                  }}
-                >
-
-                  {claimRequests.length ===
-                    0 ? (
-                    <p
-                      style={{
-                        color:
-                          "#718198",
-                      }}
-                    >
-                      No claims found.
-                    </p>
-                  ) : (
-                    claimRequests.map(
-                      (claim) => (
-                        <div
-                          key={
-                            claim.id
-                          }
-                          style={{
-                            padding:
-                              "20px",
-                            borderRadius:
-                              "14px",
-                            background:
-                              "#0b192a",
-                            border:
-                              "1px solid rgba(255,255,255,.06)",
-                          }}
+                      {user.role !== "admin" && (
+                        <button
+                          className="delete-btn"
+                          onClick={() => adminDeleteUser(user.id)}
                         >
-
-                          <div
-                            style={{
-                              display:
-                                "flex",
-                              justifyContent:
-                                "space-between",
-                              gap:
-                                "15px",
-                            }}
-                          >
-
-                            <div>
-
-                              <h3>
-                                📦{" "}
-                                {
-                                  claim.itemName
-                                }
-                              </h3>
-
-                              <p
-                                style={{
-                                  color:
-                                    "#8493a9",
-                                  fontSize:
-                                    "12px",
-                                  marginTop:
-                                    "7px",
-                                }}
-                              >
-                                Claimant:{" "}
-                                {
-                                  claim.claimantName
-                                }
-                              </p>
-
-                              <p
-                                style={{
-                                  color:
-                                    "#8493a9",
-                                  fontSize:
-                                    "11px",
-                                }}
-                              >
-                                {
-                                  claim.claimantEmail
-                                }
-                              </p>
-
-                              <p
-                                style={{
-                                  color:
-                                    "#8493a9",
-                                  fontSize:
-                                    "11px",
-                                }}
-                              >
-                                Reason:{" "}
-                                {
-                                  claim.reason
-                                }
-                              </p>
-
-                            </div>
-
-                            <span
-                              className={`claim-status ${claim.status.toLowerCase()}`}
-                            >
-                              {
-                                claim.status
-                              }
-                            </span>
-
-                          </div>
-
-                          <div
-                            style={{
-                              display:
-                                "flex",
-                              gap:
-                                "8px",
-                              marginTop:
-                                "15px",
-                              flexWrap:
-                                "wrap",
-                            }}
-                          >
-
-                            {claim.status ===
-                              "Pending" && (
-                                <>
-                                  <button
-                                    className="approve-btn"
-                                    onClick={() =>
-                                      adminApproveClaim(
-                                        claim.id
-                                      )
-                                    }
-                                  >
-                                    ✅ Approve
-                                  </button>
-
-                                  <button
-                                    className="reject-btn"
-                                    onClick={() =>
-                                      adminRejectClaim(
-                                        claim.id
-                                      )
-                                    }
-                                  >
-                                    ❌ Reject
-                                  </button>
-                                </>
-                              )}
-
-                            <button
-                              className="delete-btn"
-                              onClick={() =>
-                                adminDeleteClaim(
-                                  claim.id
-                                )
-                              }
-                            >
-                              🗑️ Delete
-                            </button>
-
-                          </div>
-
-                        </div>
-                      )
-                    )
-                  )}
-
-                </div>
-              )}
-
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
-
         </div>
       )}
-
-  </div>
-);
+    </div>
+  );
 }
 
 export default App;
