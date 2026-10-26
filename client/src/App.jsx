@@ -1184,7 +1184,6 @@ function App() {
           <button
             onClick={() => {
               if (!currentUser) {
-                alert("Please log in to report an item.");
                 setShowLogin(true);
                 return;
               }
@@ -1212,6 +1211,28 @@ function App() {
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="mobile-nav-drawer">
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              if (!currentUser) {
+                setShowLogin(true);
+                return;
+              }
+              setReportType("Lost");
+              setShowReport(true);
+            }}
+            style={{
+              background: "linear-gradient(135deg, #ff416c, #ff4b2b)",
+              color: "white",
+              fontWeight: "700",
+              border: "none",
+              boxShadow: "0 4px 15px rgba(255, 75, 43, 0.35)",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            ➕ Report Lost / Found Item
+          </button>
           <button
             onClick={() => {
               scrollToSection("home");

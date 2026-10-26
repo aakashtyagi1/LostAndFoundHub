@@ -1,7 +1,7 @@
 {
   "name": "lost-and-found-hub",
   "version": "2.0.0",
-  "description": "Lost & Found Hub — MCA College Mini Project (React + Node.js + Express + MongoDB)",
+  "description": "Lost & Found Hub — Campus Recovery Portal (React + Node.js + Express + MongoDB)",
   "type": "module",
   "scripts": {
     "dev:backend": "npm --prefix backend run dev",

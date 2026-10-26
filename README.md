@@ -1,6 +1,6 @@
 # 📍 Lost & Found Hub
 
-> **MCA College Mini Project**  
+> **Campus Belongings Recovery Portal**  
 > A full-stack web application designed for campus students and faculty to report, search for, verify, and recover lost and found belongings.
 
 ---
