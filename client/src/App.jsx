@@ -1139,9 +1139,9 @@ function App() {
             </div>
           )}
 
-          {/* User Status / Login / Register */}
+          {/* User Status / Login / Register (Desktop) */}
           {currentUser ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div className="desktop-user-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div className="nav-user-pill">
                 <span style={{ fontSize: "15px" }}>
                   {isAdmin ? "🛡️" : "🎓"}
@@ -1164,7 +1164,7 @@ function App() {
               </button>
             </div>
           ) : (
-            <div className="nav-auth-btns">
+            <div className="nav-auth-btns desktop-only">
               <button
                 onClick={() => setShowLogin(true)}
                 className="nav-login-btn"
@@ -1246,27 +1246,74 @@ function App() {
           >
             ℹ️ How It Works
           </button>
-          {currentUser && !isAdmin && (
-            <button
-              onClick={() => {
-                scrollToSection("dashboard");
-                setMobileMenuOpen(false);
-              }}
-            >
-              📋 My Dashboard
-            </button>
-          )}
-          {isAdmin && (
-            <button
-              onClick={() => {
-                loadAdminData();
-                setShowAdmin(true);
-                setMobileMenuOpen(false);
-              }}
-              style={{ color: "#ffc837", fontWeight: "bold" }}
-            >
-              🛡️ Admin Panel
-            </button>
+
+          {currentUser ? (
+            <>
+              <div className="mobile-drawer-user-card">
+                <span style={{ fontSize: "20px" }}>{isAdmin ? "🛡️" : "🎓"}</span>
+                <div>
+                  <strong style={{ fontSize: "13px" }}>{currentUser.name}</strong>
+                  <small style={{ color: isAdmin ? "#ffc837" : "#32c8ff", display: "block", fontSize: "11px" }}>
+                    {isAdmin ? "Campus Administrator" : "Student"} • {currentUser.email}
+                  </small>
+                </div>
+              </div>
+
+              {!isAdmin && (
+                <button
+                  onClick={() => {
+                    scrollToSection("dashboard");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  📋 My Dashboard
+                </button>
+              )}
+
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    loadAdminData();
+                    setShowAdmin(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  style={{ color: "#ffc837", fontWeight: "bold" }}
+                >
+                  🛡️ Admin Panel
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                style={{ color: "#ff8282" }}
+              >
+                🚪 Log Out
+              </button>
+            </>
+          ) : (
+            <div className="mobile-drawer-auth">
+              <button
+                onClick={() => {
+                  setShowLogin(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-login-btn"
+              >
+                🔑 Log In
+              </button>
+              <button
+                onClick={() => {
+                  setShowSignup(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-register-btn"
+              >
+                🎓 Register
+              </button>
+            </div>
           )}
         </div>
       )}

@@ -673,3 +673,17 @@ body.light,
   color: #0284c7 !important;
   border-color: #bae6fd !important;
 }
+
+[data-theme="light"] .mobile-drawer-user-card,
+.app.light .mobile-drawer-user-card {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mobile-login-btn,
+.app.light .mobile-login-btn {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
