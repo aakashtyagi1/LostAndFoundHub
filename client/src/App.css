@@ -1583,8 +1583,8 @@ body.light,
   color: #0f172a !important;
 }
 
-[data-theme="light"] .hero-content > p,
-.app.light .hero-content > p {
+[data-theme="light"] .hero-content>p,
+.app.light .hero-content>p {
   color: #475569 !important;
 }
 
@@ -1679,8 +1679,8 @@ body.light,
   color: #0f172a !important;
 }
 
-[data-theme="light"] .item-card > p,
-.app.light .item-card > p {
+[data-theme="light"] .item-card>p,
+.app.light .item-card>p {
   color: #64748b !important;
 }
 
@@ -1862,8 +1862,8 @@ body.light,
   color: #0f172a !important;
 }
 
-[data-theme="light"] .modal > p,
-.app.light .modal > p {
+[data-theme="light"] .modal>p,
+.app.light .modal>p {
   color: #64748b !important;
 }
 
