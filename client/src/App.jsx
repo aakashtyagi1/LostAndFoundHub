@@ -213,6 +213,7 @@ function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Form & Selection States
   const [reportType, setReportType] = useState("Lost");
@@ -955,7 +956,7 @@ function App() {
           <div className="logo-icon">📍</div>
           <div>
             <div className="logo-text">Lost & Found Hub</div>
-            <small>Reconnecting What Matters — MCA Project</small>
+            <small className="logo-tagline">Lost Today, Found Tomorrow</small>
           </div>
         </div>
 
@@ -1140,9 +1141,9 @@ function App() {
 
           {/* User Status / Login / Register */}
           {currentUser ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div className="nav-user-pill">
-                <span style={{ fontSize: "16px" }}>
+                <span style={{ fontSize: "15px" }}>
                   {isAdmin ? "🛡️" : "🎓"}
                 </span>
                 <div style={{ textAlign: "left", lineHeight: 1.2 }}>
@@ -1163,7 +1164,7 @@ function App() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div className="nav-auth-btns">
               <button
                 onClick={() => setShowLogin(true)}
                 className="nav-login-btn"
@@ -1172,16 +1173,7 @@ function App() {
               </button>
               <button
                 onClick={() => setShowSignup(true)}
-                style={{
-                  border: "none",
-                  background: "linear-gradient(135deg, #00c6ff, #0072ff)",
-                  color: "white",
-                  padding: "8px 16px",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                  fontWeight: "700",
-                  boxShadow: "0 4px 15px rgba(0, 150, 255, 0.3)",
-                }}
+                className="nav-register-btn"
               >
                 Register
               </button>
@@ -1199,21 +1191,85 @@ function App() {
               setReportType("Lost");
               setShowReport(true);
             }}
-            style={{
-              border: "none",
-              background: "linear-gradient(135deg, #ff416c, #ff4b2b)",
-              color: "white",
-              padding: "9px 18px",
-              borderRadius: "10px",
-              fontSize: "13px",
-              fontWeight: "700",
-              boxShadow: "0 4px 15px rgba(255, 75, 43, 0.35)",
-            }}
+            className="nav-report-btn"
           >
             + Report Item
           </button>
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            type="button"
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Menu"
+            aria-label="Navigation Menu"
+          >
+            {mobileMenuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-drawer">
+          <button
+            onClick={() => {
+              scrollToSection("home");
+              setMobileMenuOpen(false);
+            }}
+          >
+            🏠 Home
+          </button>
+          <button
+            onClick={() => {
+              setTypeFilter("Lost");
+              scrollToSection("items");
+              setMobileMenuOpen(false);
+            }}
+          >
+            🚨 Lost Items
+          </button>
+          <button
+            onClick={() => {
+              setTypeFilter("Found");
+              scrollToSection("items");
+              setMobileMenuOpen(false);
+            }}
+          >
+            🎁 Found Items
+          </button>
+          <button
+            onClick={() => {
+              scrollToSection("how-it-works");
+              setMobileMenuOpen(false);
+            }}
+          >
+            ℹ️ How It Works
+          </button>
+          {currentUser && !isAdmin && (
+            <button
+              onClick={() => {
+                scrollToSection("dashboard");
+                setMobileMenuOpen(false);
+              }}
+            >
+              📋 My Dashboard
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => {
+                loadAdminData();
+                setShowAdmin(true);
+                setMobileMenuOpen(false);
+              }}
+              style={{ color: "#ffc837", fontWeight: "bold" }}
+            >
+              🛡️ Admin Panel
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ================= HERO SECTION ================= */}
       <section className="hero" id="home">
@@ -1368,18 +1424,8 @@ function App() {
         </div>
 
         {/* Type and Status Toggle Pills */}
-        <div
-          style={{
-            maxWidth: "1100px",
-            margin: "20px auto 35px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "15px",
-          }}
-        >
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <div className="filter-bar-container">
+          <div className="type-filter-group">
             {["All", "Lost", "Found"].map((t) => (
               <button
                 key={t}
@@ -1391,7 +1437,7 @@ function App() {
             ))}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="status-filter-group">
             <span style={{ fontSize: "12px", color: "#8597ad" }}>Status:</span>
             <select
               value={statusFilter}
@@ -1733,8 +1779,8 @@ function App() {
           <span>PLATFORM CAPABILITIES</span>
           <h2>Designed for Campus Life</h2>
           <p>
-            Key technologies and workflow features implemented for our MCA
-            College Mini Project.
+            Key technologies and workflow features engineered for seamless
+            campus recovery and reconnection.
           </p>
         </div>
 
@@ -1871,7 +1917,7 @@ function App() {
           </div>
           <div>
             <strong>Lost & Found Hub</strong>
-            <small>MCA College Mini Project • MERN Stack Architecture</small>
+            <small>Lost Today, Found Tomorrow • Modern Campus Recovery Portal</small>
           </div>
         </div>
 

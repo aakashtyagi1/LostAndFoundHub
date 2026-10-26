@@ -640,3 +640,36 @@ body.light,
 .app.light textarea::placeholder {
   color: #94a3b8 !important;
 }
+
+[data-theme="light"] .logo-tagline,
+.app.light .logo-tagline {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .mobile-menu-btn,
+.app.light .mobile-menu-btn {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .mobile-nav-drawer,
+.app.light .mobile-nav-drawer {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+[data-theme="light"] .mobile-nav-drawer button,
+.app.light .mobile-nav-drawer button {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mobile-nav-drawer button:hover,
+.app.light .mobile-nav-drawer button:hover {
+  background: #f0f9ff !important;
+  color: #0284c7 !important;
+  border-color: #bae6fd !important;
+}
