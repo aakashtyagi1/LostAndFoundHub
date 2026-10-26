@@ -35,6 +35,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware to ensure DB connection is ready on serverless requests (Vercel)
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState === 0) {
+    try {
+      await connectDB();
+    } catch (err) {
+      console.error("Serverless DB connection error:", err.message);
+    }
+  }
+  next();
+});
+
 // Root route
 app.get("/", (req, res) => {
   res.json({
@@ -62,18 +74,6 @@ app.use("/api/items", itemsRoutes);
 app.use("/api/claims", claimsRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/admin", adminRoutes);
-
-// Middleware to ensure DB connection is ready on serverless requests (Vercel)
-app.use(async (req, res, next) => {
-  if (mongoose.connection.readyState === 0) {
-    try {
-      await connectDB();
-    } catch (err) {
-      console.error("Serverless DB connection error:", err.message);
-    }
-  }
-  next();
-});
 
 // 404 Route Handler
 app.use((req, res) => {
