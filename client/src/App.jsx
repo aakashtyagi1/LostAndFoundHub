@@ -1180,7 +1180,7 @@ function App() {
             </div>
           )}
 
-          {/* Report Button */}
+          {/* Report Button (Desktop only; on mobile, accessed via menu drawer and hero CTA buttons) */}
           <button
             onClick={() => {
               if (!currentUser) {
@@ -1190,7 +1190,7 @@ function App() {
               setReportType("Lost");
               setShowReport(true);
             }}
-            className="nav-report-btn"
+            className="nav-report-btn desktop-only"
           >
             + Report Item
           </button>

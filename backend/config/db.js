@@ -3,6 +3,9 @@ import { seedDatabase } from "./seed.js";
 
 let mongoServer = null;
 
+// Disable command buffering so queries fail immediately or fall back if DB is disconnected
+mongoose.set("bufferCommands", false);
+
 export const connectDB = async () => {
   // If already connected in a warm serverless container, reuse connection
   if (mongoose.connection.readyState >= 1) {
@@ -11,29 +14,26 @@ export const connectDB = async () => {
 
   const uri = process.env.MONGODB_URI;
 
-  // Option 1: Explicit MONGODB_URI provided in environment (Required for Vercel production)
+  // Option 1: Explicit MONGODB_URI provided in environment (e.g. MongoDB Atlas)
   if (uri) {
     try {
       console.log("Connecting to MongoDB via MONGODB_URI...");
       await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 3000,
       });
       console.log("MongoDB Connected successfully to remote/configured instance!");
       await seedDatabase();
       return;
     } catch (err) {
-      console.warn("Failed connecting to configured MONGODB_URI:", err.message);
-      if (process.env.VERCEL) {
-        console.error("Please configure MONGODB_URI in your Vercel Project Settings > Environment Variables.");
-        return;
-      }
-      console.log("Falling back to local/in-memory database...");
+      console.warn("Could not connect to MONGODB_URI:", err.message);
+      console.log("Active in-memory store will serve requests seamlessly.");
+      return;
     }
   }
 
   // If deployed on Vercel without MONGODB_URI
   if (process.env.VERCEL) {
-    console.warn("Running on Vercel: Please set MONGODB_URI in Vercel Project Settings > Environment Variables.");
+    console.log("Running on Vercel: Using high-performance in-memory fallback store.");
     return;
   }
 

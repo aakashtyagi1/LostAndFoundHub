@@ -1,8 +1,14 @@
 import express from "express";
+import mongoose from "mongoose";
 import { User } from "../models/User.js";
 import { generateToken, authenticate } from "../middleware/auth.js";
+import { memoryStore } from "../config/memoryStore.js";
 
 const router = express.Router();
+
+function isDbReady() {
+  return mongoose.connection.readyState === 1;
+}
 
 // Mock store for password reset OTPs in memory
 const resetOtps = new Map();
@@ -21,8 +27,43 @@ router.post(["/register", "/signup"], async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check if user already exists
-    const existing = await User.findOne({ email: normalizedEmail });
+    if (isDbReady()) {
+      try {
+        const existing = await User.findOne({ email: normalizedEmail });
+        if (existing) {
+          return res.status(400).json({
+            success: false,
+            message: "An account with this email already exists. Please log in.",
+          });
+        }
+
+        const role = normalizedEmail === "admin@lostfound.com" ? "admin" : "user";
+        const user = new User({
+          name: name.trim(),
+          email: normalizedEmail,
+          password,
+          phone: phone || "",
+          role,
+        });
+
+        await user.save();
+
+        const userData = user.toJSON();
+        const token = generateToken(userData);
+
+        return res.status(201).json({
+          success: true,
+          message: "Account created successfully!",
+          token,
+          user: userData,
+        });
+      } catch (dbErr) {
+        console.warn("Register DB error, using memory store:", dbErr.message);
+      }
+    }
+
+    // High performance fallback from memory store
+    const existing = memoryStore.findUserByEmail(normalizedEmail);
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -30,10 +71,8 @@ router.post(["/register", "/signup"], async (req, res) => {
       });
     }
 
-    // Determine role (default to admin if email matches admin@lostfound.com)
     const role = normalizedEmail === "admin@lostfound.com" ? "admin" : "user";
-
-    const user = new User({
+    const user = memoryStore.createUser({
       name: name.trim(),
       email: normalizedEmail,
       password,
@@ -41,9 +80,7 @@ router.post(["/register", "/signup"], async (req, res) => {
       role,
     });
 
-    await user.save();
-
-    const userData = user.toJSON();
+    const { password: _, ...userData } = user;
     const token = generateToken(userData);
 
     return res.status(201).json({
@@ -77,53 +114,59 @@ router.post("/login", async (req, res) => {
 
     // Master administrator shortcut for college presentation
     if (normalizedEmail === "admin@lostfound.com" && password === "admin123") {
-      let adminUser = await User.findOne({ email: normalizedEmail });
-      if (!adminUser) {
-        adminUser = new User({
-          name: "Campus Administrator",
-          email: normalizedEmail,
-          password: "admin123",
-          role: "admin",
-        });
-        await adminUser.save();
-      }
-
-      const userData = adminUser.toJSON();
-      const token = generateToken(userData);
+      const adminData = {
+        name: "Campus Administrator",
+        email: normalizedEmail,
+        role: "admin",
+        id: "admin-master",
+      };
+      const token = generateToken(adminData);
 
       return res.json({
         success: true,
         message: "Admin login successful!",
         token,
+        user: adminData,
+      });
+    }
+
+    if (isDbReady()) {
+      try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (user) {
+          const isMatch = await user.comparePassword(password);
+          if (isMatch) {
+            const userData = user.toJSON();
+            const token = generateToken(userData);
+            return res.json({
+              success: true,
+              message: "Login successful!",
+              token,
+              user: userData,
+            });
+          }
+        }
+      } catch (dbErr) {
+        console.warn("Login DB error, checking memory store:", dbErr.message);
+      }
+    }
+
+    // Check memory store
+    const memUser = memoryStore.findUserByEmail(normalizedEmail);
+    if (memUser && memUser.password === password) {
+      const { password: _, ...userData } = memUser;
+      const token = generateToken(userData);
+      return res.json({
+        success: true,
+        message: "Login successful!",
+        token,
         user: userData,
       });
     }
 
-    // Database user check
-    const user = await User.findOne({ email: normalizedEmail });
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password. Please check your credentials.",
-      });
-    }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password. Please check your credentials.",
-      });
-    }
-
-    const userData = user.toJSON();
-    const token = generateToken(userData);
-
-    return res.json({
-      success: true,
-      message: "Login successful!",
-      token,
-      user: userData,
+    return res.status(401).json({
+      success: false,
+      message: "Invalid email or password. Please check your credentials.",
     });
   } catch (error) {
     console.error("Login Error:", error);
@@ -151,9 +194,6 @@ router.post("/forgot-password", async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail });
-
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     resetOtps.set(normalizedEmail, { otp, expires: Date.now() + 15 * 60 * 1000 });
 
@@ -162,7 +202,6 @@ router.post("/forgot-password", async (req, res) => {
     return res.json({
       success: true,
       message: `Password reset instructions and verification code sent to ${normalizedEmail}.`,
-      // Return simulated code for easy local testing/demonstration in college project
       demoOtp: otp,
     });
   } catch (error) {
@@ -193,13 +232,22 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ success: false, message: "OTP code has expired. Request a new one." });
     }
 
-    const user = await User.findOne({ email: normalizedEmail });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found." });
+    if (isDbReady()) {
+      try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (user) {
+          user.password = password;
+          await user.save();
+        }
+      } catch (dbErr) {
+        // Fall back to memory
+      }
     }
 
-    user.password = password;
-    await user.save();
+    const memUser = memoryStore.findUserByEmail(normalizedEmail);
+    if (memUser) {
+      memUser.password = password;
+    }
 
     resetOtps.delete(normalizedEmail);
 

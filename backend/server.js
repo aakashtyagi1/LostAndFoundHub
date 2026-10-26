@@ -13,6 +13,9 @@ import adminRoutes from "./routes/admin.js";
 
 dotenv.config();
 
+// Disable buffering commands globally so queries never hang for 10s when DB is offline
+mongoose.set("bufferCommands", false);
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
